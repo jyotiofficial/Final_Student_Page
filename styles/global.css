@@ -1,0 +1,13 @@
+.greet > p {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #1b3061;
+}
+@media only screen and (max-width: 600px) {
+  .greet > p {
+    font-size: 1.5rem;
+    text-align: center;
+  }
+}
+
+@import url("https://fonts.googleapis.com/css2?family=Poppins:weight@100;200;300;400;500;600;700;800&display=swap");
