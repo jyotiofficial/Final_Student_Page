@@ -51,7 +51,6 @@ if (isset($_POST['submit'])) {
     }
 }
 ?>
-
 <body>
 
     <?php include_once("../../components/navbar/index.php"); ?>
