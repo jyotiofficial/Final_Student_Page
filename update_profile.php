@@ -16,7 +16,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo "Failed to update data.";
     }
 }
-
 function update_existing_data($con, $fullName, $email, $age, $mobile, $address)
 {
     $query = "UPDATE student_profile SET fullName = ?, email = ?, age = ?, mobile = ?, address = ? WHERE id = 1";
