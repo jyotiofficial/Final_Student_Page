@@ -5,9 +5,8 @@ $favicon = "../../assets/favicon.ico";
 include_once("../../components/head.php");
 ?>
 <?php
-// require './auth.php';
+//require './auth.php';
 ?>
-
 <body>
     <?php
     include_once("../../components/navbar/index.php");
@@ -18,8 +17,7 @@ include_once("../../components/head.php");
     <div class="container my-3" id="content">
         <div class="container my-3 text-justify" id="content">
             <div class="bg-light p-5 rounded">
-                <form class="row g-3" action="<?php echo htmlentities($_SERVER['PHP_SELF']) ?>" method="POST" id="applicationForm">
-
+                <form class="row g-3" action="<?php echo htmlentities($_SERVER['PHP_SELF']) ?>" method="POST">
                     <div class="col-12">
                         <strong for="userName" class="form-label">Student Full Name</strong>
                         <input type="text" class="form-control" spellcheck="false" required autocomplete="off" name="userName" id="userName" placeholder="John Richard Doe">
@@ -61,19 +59,5 @@ include_once("../../components/head.php");
                 </form>
             </div>
         </div>
-        <!-- second.php -->
-        <script>
-          document.getElementById("applicationForm").addEventListener("submit", function(event) {
-          event.preventDefault(); // Prevent form submission
-
-           // Perform any necessary form validation or processing here
-
-           // Update the button in the first file
-           window.opener.document.getElementById("applyButton").innerHTML = "Applied";
-           window.opener.document.getElementById("applyButton").setAttribute("href", "#");
-           window.close(); // Close the second file after updating the button
-  });
-</script>
-
 </body>
 </html>

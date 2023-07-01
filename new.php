@@ -51,12 +51,13 @@ if (isset($_POST['submit'])) {
     }
 }
 ?>
+
 <body>
 
     <?php include_once("../../components/navbar/index.php"); ?>
 
     <div class="container my-2 greet">
-        <p>New Application</p>
+        <p>Application</p>
     </div>
 
     <!-- Display success or failure messages -->
@@ -125,8 +126,6 @@ if (isset($_POST['submit'])) {
                         <option value="Semester 4">Semester 4</option>
                         <option value="Semester 5">Semester 5</option>
                         <option value="Semester 6">Semester 6</option>
-                        <option value="Semester 7">Semester 7</option>
-                        <option value="Semester 8">Semester 8</option>
 
                         <!-- Add more options as needed -->
                     </select>
