@@ -18,6 +18,7 @@ if (isset($_POST['submit'])) {
         die('Error: Cannot connect');
     }
 
+    // Get the group details
     $CompanyName = mysqli_real_escape_string($db_connection, $_POST['CompanyName']);
     $CompanyAddress = mysqli_real_escape_string($db_connection, $_POST['CompanyAddress']);
     $CompanyLocation = mysqli_real_escape_string($db_connection, $_POST['CompanyLocation']);
@@ -28,21 +29,48 @@ if (isset($_POST['submit'])) {
     $Stipend = mysqli_real_escape_string($db_connection, $_POST['Stipend']);
     $Location = mysqli_real_escape_string($db_connection, $_POST['Location']);
 
-    // Insert the data into the database
-    $query = "INSERT INTO internship_applications (CompanyName, CompanyAddress, CompanyLocation, startDate, endDate, branch, semester, Stipend, Location) 
+    // Prepare the query for group details
+    $groupQuery = "INSERT INTO internship_applications (CompanyName, CompanyAddress, CompanyLocation, startDate, endDate, branch, semester, Stipend, Location) 
               VALUES ('$CompanyName', '$CompanyAddress', '$CompanyLocation', '$startDate', '$endDate', '$branch', '$semester', '$Stipend', '$Location')";
-              
-    if(mysqli_query($db_connection, $query)) {
-        $success = true;
+
+    // Execute the group details query
+    if (mysqli_query($db_connection, $groupQuery)) {
+        $groupSuccess = true;
+        $groupId = mysqli_insert_id($db_connection); // Get the ID of the inserted group application
     } else {
-        $success = false;
+        $groupSuccess = false;
     }
-    
+
+    // Get the student details
+    $studentNames = $_POST['studentName'];
+    $studentRollNumbers = $_POST['studentRollNumber'];
+
+    // Prepare the query for student details
+    $studentQuery = "INSERT INTO group_students (groupId, studentName, studentRollNumber) VALUES ";
+
+    // Generate the values for the student details query
+    $values = array();
+    for ($i = 0; $i < count($studentNames); $i++) {
+        $name = mysqli_real_escape_string($db_connection, $studentNames[$i]);
+        $rollNumber = mysqli_real_escape_string($db_connection, $studentRollNumbers[$i]);
+        $values[] = "('$groupId', '$name', '$rollNumber')";
+    }
+
+    // Combine the values and execute the student details query
+    if (!empty($values)) {
+        $studentQuery .= implode(", ", $values);
+        if (mysqli_query($db_connection, $studentQuery)) {
+            $studentSuccess = true;
+        } else {
+            $studentSuccess = false;
+        }
+    }
+
     // Close the database connection
     mysqli_close($db_connection);
 
     // Redirect to a success or failure page
-    if ($success) {
+    if ($groupSuccess && $studentSuccess) {
         header("Location: success.php"); // Redirect to success page
         exit();
     } else {
@@ -53,21 +81,19 @@ if (isset($_POST['submit'])) {
 ?>
 
 <body>
-
     <?php include_once("../../components/navbar/index.php"); ?>
 
     <div class="container my-2 greet">
-        <p>Application</p>
+        <p>Group Application</p>
     </div>
 
     <!-- Display success or failure messages -->
     <?php if (isset($_POST['submit'])): ?>
-        <?php if ($success): ?>
+        <?php if ($groupSuccess && $studentSuccess): ?>
             <div class="alert alert-success container col-8" role="alert">
                 <h2 class="alert-heading">Application Success</h2>
                 <hr>
-                <p>You have successfully requested NOC letter for <b><?php echo $CompanyName; ?></b>.<br>
-                Please keep checking your email inbox for further updates.</p>
+                <p>Your group application has been submitted successfully.</p>
             </div>
         <?php else: ?>
             <div class="alert alert-danger container col-8" role="alert">
@@ -139,15 +165,30 @@ if (isset($_POST['submit'])) {
                     <input type="text" class="form-control" id="Location" name="Location" required>
                 </div>
 
-                <div class="container text-center">
-                    <div class="row mx-auto">
-                        <div class="col mt-3">
-                            <button class="btn btn-primary btn-lg col-md-12" name="submit" role="button">Submit</button>
-                        </div>
+                <!-- Student details -->
+                <div class="col-md-12">
+                    <h4 class="mb-3">Student Details</h4>
+                </div>
+
+                <?php for ($i = 1; $i <= 5; $i++): ?>
+                    <div class="col-md-6">
+                        <label for="studentName<?php echo $i ?>" class="form-label">Student Name <?php echo $i ?></label>
+                        <input type="text" class="form-control" id="studentName<?php echo $i ?>" name="studentName[]" required>
                     </div>
+                    <div class="col-md-6">
+                        <label for="studentRollNumber<?php echo $i ?>" class="form-label">Roll Number <?php echo $i ?></label>
+                        <input type="text" class="form-control" id="studentRollNumber<?php echo $i ?>" name="studentRollNumber[]" required>
+                    </div>
+                <?php endfor; ?>
+
+                <!-- Submit button -->
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary" name="submit">Submit Application</button>
                 </div>
             </form>
         </div>
     </div>
+
 </body>
+
 </html>

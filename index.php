@@ -16,9 +16,17 @@ include_once("../../components/head.php");
     <div class="container text-center">
         <div class="row mx-auto">
             <div class="col mt-3">
-                <a href="./new.php" class="btn btn-primary btn-lg col-md-12 p-sm-4" role="button">
-                    Application</a>
-            </div>
+    <div class="dropdown">
+        <button class="btn btn-primary btn-lg dropdown-toggle col-md-12 p-sm-4" type="button" id="applicationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            Application
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="applicationDropdown">
+            <li><a class="dropdown-item" href="./new_individual.php">Individual Application</a></li>
+            <li><a class="dropdown-item" href="./new_group.php">Group Application</a></li>
+        </ul>
+    </div>
+</div>
+
             <div class="col my-3">
                 <a href="./previous.php" class="btn btn-warning btn-lg col-md-12 p-sm-4" role="button">Previous
                     Applications</a>
