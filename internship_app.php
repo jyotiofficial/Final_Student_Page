@@ -103,9 +103,8 @@ $previousApplications = mysqli_fetch_all($result, MYSQLI_ASSOC);
                         <th>Company</th>
                         <th>Date</th>
                         <th>Status</th>
-                        <th>Comment</th>
-                        <th>Certificate/LOR</th>
-                        <th>Action</th>
+                        <th>Certificate of Completion</th>
+                        <th>Letter</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -115,7 +114,7 @@ $previousApplications = mysqli_fetch_all($result, MYSQLI_ASSOC);
                             <td><?php echo $application['CompanyName']; ?></td>
                             <td><?php echo $application['Date']; ?></td>
                             <td><?php echo $application['Status']; ?></td>
-                            <td><?php echo $application['Comment']; ?></td>
+                            <td><?php echo $application['Letter']; ?></td>
                             <td>
                                 <?php if (!empty($application['CertificateLOR'])): ?>
                                     <a href="<?php echo $application['CertificateLOR']; ?>" target="_blank">View Certificate</a>
@@ -125,13 +124,13 @@ $previousApplications = mysqli_fetch_all($result, MYSQLI_ASSOC);
                             </td>
                             <td>
                                 <?php if (!empty($application['CertificateLOR'])): ?>
-                                    <a href="<?php echo $application['CertificateLOR']; ?>" download>Download Certificate</a>
+                                    <a href="<?php echo $application['CertificateLOR']; ?>" download class="btn btn-primary">Download Certificate</a>
                                 <?php else: ?>
                                     <!-- Upload certificate form -->
                                     <form action="upload_certificate.php" method="POST" enctype="multipart/form-data">
                                         <input type="hidden" name="application_id" value="<?php echo $application['ID']; ?>">
                                         <input type="file" name="certificate" required>
-                                        <button type="submit">Upload</button>
+                                        <button type="submit" class="btn btn-primary">Upload</button>
                                     </form>
                                 <?php endif; ?>
                             </td>
