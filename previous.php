@@ -90,13 +90,13 @@ mysqli_close($connection);
                             <td><?php echo $application['CompanyName']; ?></td>
                             <td><?php echo $application['startDate']; ?></td>
                             <td>
-                            <?php if ($application['Status'] == 'Approved'): ?>
-                                <span class="status-approved">Approved</span>
-                            <?php elseif ($application['Status'] == 'Rejected'): ?>
-                                <span class="status-rejected">Rejected</span>
-                            <?php else: ?>
-                                <?php echo $application['Status']; ?>
-                            <?php endif; ?>
+                                <?php if ($application['Status'] == 'Approved'): ?>
+                                    <span class="status-approved">Approved</span>
+                                <?php elseif ($application['Status'] == 'Rejected'): ?>
+                                    <span class="status-rejected">Rejected</span>
+                                <?php else: ?>
+                                    <?php echo $application['Status']; ?>
+                                <?php endif; ?>
                             </td>
                             <td>
                                 <?php if (!empty($application['Certificate_LOR'])): ?>

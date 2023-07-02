@@ -103,8 +103,9 @@ $previousApplications = mysqli_fetch_all($result, MYSQLI_ASSOC);
                         <th>Company</th>
                         <th>Date</th>
                         <th>Status</th>
-                        <th>Certificate of Completion</th>
-                        <th>Letter</th>
+                        <th>Comment</th>
+                        <th>Certificate/LOR</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -114,7 +115,7 @@ $previousApplications = mysqli_fetch_all($result, MYSQLI_ASSOC);
                             <td><?php echo $application['CompanyName']; ?></td>
                             <td><?php echo $application['Date']; ?></td>
                             <td><?php echo $application['Status']; ?></td>
-                            <td><?php echo $application['Letter']; ?></td>
+                            <td><?php echo $application['Comment']; ?></td>
                             <td>
                                 <?php if (!empty($application['CertificateLOR'])): ?>
                                     <a href="<?php echo $application['CertificateLOR']; ?>" target="_blank">View Certificate</a>
