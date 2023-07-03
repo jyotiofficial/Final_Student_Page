@@ -4,8 +4,22 @@ $style = "./styles/global.css";
 $favicon = "../../assets/favicon.ico";
 include_once("../../components/head.php");
 
+// Connect to the database
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "internship_portal";
+
+// Create a connection
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Check the connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
 // Check if the form is submitted
-if(isset($_POST['submit'])) {
+if (isset($_POST['submit'])) {
     // Retrieve the form data
     $userName = $_POST['userName'];
     $contact = $_POST['Contact'];
@@ -13,7 +27,7 @@ if(isset($_POST['submit'])) {
     $resume = $_FILES['resume'];
 
     // Check if a file is selected
-    if(isset($resume) && $resume['error'] === UPLOAD_ERR_OK) {
+    if (isset($resume) && $resume['error'] === UPLOAD_ERR_OK) {
         // Specify the target directory to store the uploaded files
         $targetDirectory = __DIR__ . "/CV_Uploads/";
 
@@ -21,7 +35,14 @@ if(isset($_POST['submit'])) {
         $filename = str_replace(' ', '_', $userName) . "_" . str_replace(' ', '_', "XYZPvtLtd") . "_" . str_replace(' ', '_', "2000PE0400") . ".pdf";
 
         // Move the uploaded file to the target directory
-        if(move_uploaded_file($resume['tmp_name'], $targetDirectory . $filename)) {
+        if (move_uploaded_file($resume['tmp_name'], $targetDirectory . $filename)) {
+            // Insert the data into the "Applications" table
+            $sql = "INSERT INTO Applications (student_name, contact_no, student_location, cv_file, application_date) VALUES (?, ?, ?, ?, NOW())";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("ssss", $userName, $contact, $studentLocation, $filename);
+            $stmt->execute();
+            $stmt->close();
+
             // Display success message
             $successMessage = "Applying for XYZ Pvt Ltd has been successful.";
         } else {
@@ -33,6 +54,9 @@ if(isset($_POST['submit'])) {
         $errorMessage = "Please select a valid PDF file.";
     }
 }
+
+// Close the database connection
+$conn->close();
 ?>
 
 <body>
@@ -47,15 +71,15 @@ if(isset($_POST['submit'])) {
     <div class="container my-3" id="content">
         <div class="container my-3 text-justify" id="content">
             <div class="bg-light p-5 rounded">
-                <?php if(isset($successMessage)): ?>
+                <?php if (isset($successMessage)) : ?>
                     <div class="alert alert-success" role="alert">
                         <?php echo $successMessage; ?>
                     </div>
-                <?php elseif(isset($errorMessage)): ?>
+                <?php elseif (isset($errorMessage)) : ?>
                     <div class="alert alert-danger" role="alert">
                         <?php echo $errorMessage; ?>
                     </div>
-                <?php else: ?>
+                <?php else : ?>
                     <form class="row g-3" action="<?php echo htmlentities($_SERVER['PHP_SELF']) ?>" method="POST" enctype="multipart/form-data">
                         <div class="col-12">
                             <strong for="userName" class="form-label">Student Full Name</strong>
