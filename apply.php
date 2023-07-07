@@ -21,10 +21,12 @@ if ($conn->connect_error) {
 // Check if the form is submitted
 if (isset($_POST['submit'])) {
     // Retrieve the form data
-    $userName = $_POST['userName'];
-    $contact = $_POST['Contact'];
-    $studentLocation = $_POST['StudentLocation'];
-    $resume = $_FILES['resume'];
+$userName = $_POST['userName'];
+$admissionNo = $_POST['admissionNo'];
+$contact = $_POST['Contact'];
+$studentLocation = $_POST['StudentLocation'];
+$resume = $_FILES['resume'];
+
 
     // Check if a file is selected
     if (isset($resume) && $resume['error'] === UPLOAD_ERR_OK) {
@@ -36,12 +38,13 @@ if (isset($_POST['submit'])) {
 
         // Move the uploaded file to the target directory
         if (move_uploaded_file($resume['tmp_name'], $targetDirectory . $filename)) {
-            // Insert the data into the "Applications" table
-            $sql = "INSERT INTO Applications (student_name, contact_no, student_location, cv_file, application_date) VALUES (?, ?, ?, ?, NOW())";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("ssss", $userName, $contact, $studentLocation, $filename);
-            $stmt->execute();
-            $stmt->close();
+// Insert the data into the "Applications" table
+$sql = "INSERT INTO Applications (student_name, admission_no, contact_no, student_location, cv_file, application_date) VALUES (?, ?, ?, ?, ?, NOW())";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("sssss", $userName, $admissionNo, $contact, $studentLocation, $filename);
+$stmt->execute();
+$stmt->close();
+
 
             // Display success message
             $successMessage = "Applying for XYZ Pvt Ltd has been successful.";
