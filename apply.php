@@ -85,6 +85,10 @@ $conn->close();
                             <strong for="userName" class="form-label">Student Full Name</strong>
                             <input type="text" class="form-control" spellcheck="false" required autocomplete="off" name="userName" id="userName" placeholder="John Richard Doe">
                         </div>
+                         <div class="col-12">
+                            <strong for="userName" class="form-label">Admission Number</strong>
+                            <input type="text" class="form-control" spellcheck="false" required autocomplete="off" name="admissionNo" id="admissionNo" placeholder="2099SM4004">
+                         </div>
                         <div class="col-12">
                             <strong for="Contact" class="form-label">Contact No.</strong>
                             <input type="text" class="form-control" spellcheck="false" required autocomplete="off" name="Contact" id="Contact" placeholder="987654210">
