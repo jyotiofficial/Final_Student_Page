@@ -43,17 +43,17 @@ if (isset($_POST['submit'])) {
 
     // Get the student details
     $studentNames = $_POST['studentName'];
-    $studentRollNumbers = $_POST['studentRollNumber'];
+    $studentAdmNumbers = $_POST['studentAdmNumber'];
 
     // Prepare the query for student details
-    $studentQuery = "INSERT INTO group_students (groupId, studentName, studentRollNumber) VALUES ";
+    $studentQuery = "INSERT INTO group_students (groupId, studentName, studentAdmNumber) VALUES ";
 
     // Generate the values for the student details query
     $values = array();
     for ($i = 0; $i < count($studentNames); $i++) {
         $name = mysqli_real_escape_string($db_connection, $studentNames[$i]);
-        $rollNumber = mysqli_real_escape_string($db_connection, $studentRollNumbers[$i]);
-        $values[] = "('$groupId', '$name', '$rollNumber')";
+        $AdmNumber = mysqli_real_escape_string($db_connection, $studentAdmNumbers[$i]);
+        $values[] = "('$groupId', '$name', '$AdmNumber')";
     }
 
     // Combine the values and execute the student details query
@@ -176,8 +176,8 @@ if (isset($_POST['submit'])) {
                         <input type="text" class="form-control" id="studentName<?php echo $i ?>" name="studentName[]" required>
                     </div>
                     <div class="col-md-6">
-                        <label for="studentRollNumber<?php echo $i ?>" class="form-label">Roll Number <?php echo $i ?></label>
-                        <input type="text" class="form-control" id="studentRollNumber<?php echo $i ?>" name="studentRollNumber[]" required>
+                        <label for="studentRollNumber<?php echo $i ?>" class="form-label">Admission Number <?php echo $i ?></label>
+                        <input type="text" class="form-control" id="studentAdmNumber<?php echo $i ?>" name="studentAdmNumber[]" required>
                     </div>
                 <?php endfor; ?>
 
