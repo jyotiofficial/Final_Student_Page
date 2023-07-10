@@ -18,6 +18,24 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+// Retrieve the announcement titles from the new_announcement table
+$sql = "SELECT announcement_title FROM new_annoucement";
+$result = $conn->query($sql);
+
+// Check if there are any announcements
+if ($result && $result->num_rows > 0) {
+    // Output each announcement title
+    while ($row = $result->fetch_assoc()) {
+        $announcementTitle = $row['announcement_title'];
+        echo $announcementTitle . "<br>";
+    }
+} else {
+    echo "No announcements found.";
+}
+
+// Close the database connection
+$conn->close();
+
 // Check if the form is submitted
 if (isset($_POST['submit'])) {
     // Retrieve the form data
@@ -27,14 +45,13 @@ $contact = $_POST['Contact'];
 $studentLocation = $_POST['StudentLocation'];
 $resume = $_FILES['resume'];
 
-
     // Check if a file is selected
     if (isset($resume) && $resume['error'] === UPLOAD_ERR_OK) {
         // Specify the target directory to store the uploaded files
         $targetDirectory = __DIR__ . "/CV_Uploads/";
 
         // Generate a unique filename based on the given format
-        $filename = str_replace(' ', '_', $userName) . "_" . str_replace(' ', '_', "XYZPvtLtd") . "_" . str_replace(' ', '_', "2000PE0400") . ".pdf";
+        $filename = str_replace(' ', '_', $userName) . "_" . str_replace(' ', '_', $companyName) . "_" . str_replace(' ', '_', $admissionNo) . ".pdf";
 
         // Move the uploaded file to the target directory
         if (move_uploaded_file($resume['tmp_name'], $targetDirectory . $filename)) {
@@ -44,6 +61,9 @@ $stmt = $conn->prepare($sql);
 $stmt->bind_param("sssss", $userName, $admissionNo, $contact, $studentLocation, $filename);
 $stmt->execute();
 $stmt->close();
+$sql = "INSERT INTO new_announcement (id, student_name, admission_no, contact_no, student_location, cv_file, application_date) VALUES (?, ?, ?, ?, ?, ?, NOW())";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("isssss", $id, $userName, $admissionNo, $contact, $studentLocation, $filename);
 
 
             // Display success message
@@ -58,8 +78,6 @@ $stmt->close();
     }
 }
 
-// Close the database connection
-$conn->close();
 ?>
 
 <body>
@@ -68,7 +86,7 @@ $conn->close();
     ?>
 
     <div class="container my-2 greet">
-        <p>Applying for XYZ Pvt Ltd</p>
+    <p>Applying for <?php echo isset($announcementTitle) ? $announcementTitle : "XYZ Pvt Ltd"; ?></p>
     </div>
 
     <div class="container my-3" id="content">
