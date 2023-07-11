@@ -18,32 +18,27 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Retrieve the announcement titles from the new_announcement table
-$sql = "SELECT announcement_title FROM new_annoucement";
+// Retrieve the announcement title from the new_announcement table
+$sql = "SELECT announcement_title FROM new_annoucement LIMIT 1"; // Modified query to fetch only one row
 $result = $conn->query($sql);
 
-// Check if there are any announcements
+// Check if there is any announcement title
 if ($result && $result->num_rows > 0) {
-    // Output each announcement title
-    while ($row = $result->fetch_assoc()) {
-        $announcementTitle = $row['announcement_title'];
-        echo $announcementTitle . "<br>";
-    }
+    // Fetch the announcement title
+    $row = $result->fetch_assoc();
+    $announcementTitle = $row['announcement_title'];
 } else {
-    echo "No announcements found.";
+    $announcementTitle = "XYZ Pvt Ltd"; // Set a default announcement title
 }
-
-// Close the database connection
-$conn->close();
 
 // Check if the form is submitted
 if (isset($_POST['submit'])) {
     // Retrieve the form data
-$userName = $_POST['userName'];
-$admissionNo = $_POST['admissionNo'];
-$contact = $_POST['Contact'];
-$studentLocation = $_POST['StudentLocation'];
-$resume = $_FILES['resume'];
+    $userName = $_POST['userName'];
+    $admissionNo = $_POST['admissionNo'];
+    $contact = $_POST['Contact'];
+    $studentLocation = $_POST['StudentLocation'];
+    $resume = $_FILES['resume'];
 
     // Check if a file is selected
     if (isset($resume) && $resume['error'] === UPLOAD_ERR_OK) {
@@ -51,23 +46,19 @@ $resume = $_FILES['resume'];
         $targetDirectory = __DIR__ . "/CV_Uploads/";
 
         // Generate a unique filename based on the given format
-        $filename = str_replace(' ', '_', $userName) . "_" . str_replace(' ', '_', $companyName) . "_" . str_replace(' ', '_', $admissionNo) . ".pdf";
+        $filename = str_replace(' ', '_', $userName) . "_" . str_replace(' ', '_', $announcementTitle) . "_" . str_replace(' ', '_', $admissionNo) . ".pdf";
 
         // Move the uploaded file to the target directory
         if (move_uploaded_file($resume['tmp_name'], $targetDirectory . $filename)) {
-// Insert the data into the "Applications" table
-$sql = "INSERT INTO Applications (student_name, admission_no, contact_no, student_location, cv_file, application_date) VALUES (?, ?, ?, ?, ?, NOW())";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("sssss", $userName, $admissionNo, $contact, $studentLocation, $filename);
-$stmt->execute();
-$stmt->close();
-$sql = "INSERT INTO new_announcement (id, student_name, admission_no, contact_no, student_location, cv_file, application_date) VALUES (?, ?, ?, ?, ?, ?, NOW())";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("isssss", $id, $userName, $admissionNo, $contact, $studentLocation, $filename);
-
+            // Insert the data into the "Applications" table
+            $sql = "INSERT INTO Applications (student_name, admission_no, contact_no, student_location, cv_file, application_date) VALUES (?, ?, ?, ?, ?, NOW())";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("sssss", $userName, $admissionNo, $contact, $studentLocation, $filename);
+            $stmt->execute();
+            $stmt->close();
 
             // Display success message
-            $successMessage = "Applying for XYZ Pvt Ltd has been successful.";
+            $successMessage = "Successfully applied for $announcementTitle.<br>You have successfully registered for $announcementTitle. Please keep checking your email inbox for further updates.";
         } else {
             // Display error message
             $errorMessage = "Failed to move the uploaded file.";
@@ -78,6 +69,8 @@ $stmt->bind_param("isssss", $id, $userName, $admissionNo, $contact, $studentLoca
     }
 }
 
+// Close the database connection
+$conn->close();
 ?>
 
 <body>
@@ -86,7 +79,7 @@ $stmt->bind_param("isssss", $id, $userName, $admissionNo, $contact, $studentLoca
     ?>
 
     <div class="container my-2 greet">
-    <p>Applying for <?php echo isset($announcementTitle) ? $announcementTitle : "XYZ Pvt Ltd"; ?></p>
+        <p>Applying for <?php echo $announcementTitle; ?></p>
     </div>
 
     <div class="container my-3" id="content">
@@ -106,10 +99,10 @@ $stmt->bind_param("isssss", $id, $userName, $admissionNo, $contact, $studentLoca
                             <strong for="userName" class="form-label">Student Full Name</strong>
                             <input type="text" class="form-control" spellcheck="false" required autocomplete="off" name="userName" id="userName" placeholder="John Richard Doe">
                         </div>
-                         <div class="col-12">
-                            <strong for="userName" class="form-label">Admission Number</strong>
+                        <div class="col-12">
+                            <strong for="admissionNo" class="form-label">Admission Number</strong>
                             <input type="text" class="form-control" spellcheck="false" required autocomplete="off" name="admissionNo" id="admissionNo" placeholder="2099SM4004">
-                         </div>
+                        </div>
                         <div class="col-12">
                             <strong for="Contact" class="form-label">Contact No.</strong>
                             <input type="text" class="form-control" spellcheck="false" required autocomplete="off" name="Contact" id="Contact" placeholder="987654210">
