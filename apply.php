@@ -27,9 +27,21 @@ if ($result && $result->num_rows > 0) {
     // Fetch the announcement title
     $row = $result->fetch_assoc();
     $announcementTitle = $row['announcement_title'];
+
+    // Retrieve the filename and company name
+    $filename = str_replace(' ', '_', $announcementTitle);
+    $fileNameParts = explode("_", $filename); // Assuming $filename contains the uploaded file's name
+    $companyName = isset($fileNameParts[1]) ? $fileNameParts[1] : "";
+
+    // Update the company_name column in the applications table with the announcement title
+    $updateSql = "UPDATE applications SET company_name='$announcementTitle' WHERE company_name='$companyName'";
+    $conn->query($updateSql);
 } else {
     $announcementTitle = "XYZ Pvt Ltd"; // Set a default announcement title
 }
+
+// Close the database connection
+$conn->close();
 
 // Check if the form is submitted
 if (isset($_POST['submit'])) {
@@ -51,6 +63,7 @@ if (isset($_POST['submit'])) {
         // Move the uploaded file to the target directory
         if (move_uploaded_file($resume['tmp_name'], $targetDirectory . $filename)) {
             // Insert the data into the "Applications" table
+            $conn = new mysqli($servername, $username, $password, $dbname); // Reconnect to the database
             $sql = "INSERT INTO Applications (student_name, admission_no, contact_no, student_location, cv_file, application_date) VALUES (?, ?, ?, ?, ?, NOW())";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("sssss", $userName, $admissionNo, $contact, $studentLocation, $filename);
@@ -59,6 +72,9 @@ if (isset($_POST['submit'])) {
 
             // Display success message
             $successMessage = "Successfully applied for $announcementTitle.<br>You have successfully registered for $announcementTitle. Please keep checking your email inbox for further updates.";
+
+            // Close the database connection
+            $conn->close();
         } else {
             // Display error message
             $errorMessage = "Failed to move the uploaded file.";
@@ -68,9 +84,6 @@ if (isset($_POST['submit'])) {
         $errorMessage = "Please select a valid PDF file.";
     }
 }
-
-// Close the database connection
-$conn->close();
 ?>
 
 <body>
@@ -90,10 +103,10 @@ $conn->close();
                         <?php echo $successMessage; ?>
                     </div>
                 <?php elseif (isset($errorMessage)) : ?>
-                    <div class="alert alert-danger" role="alert">
-                        <?php echo $errorMessage; ?>
-                    </div>
-                <?php else : ?>
+<div class="alert alert-danger" role="alert">
+<?php echo $errorMessage; ?>
+</div>
+<?php endif; ?>  <!-- Form content goes here -->
                     <form class="row g-3" action="<?php echo htmlentities($_SERVER['PHP_SELF']) ?>" method="POST" enctype="multipart/form-data">
                         <div class="col-12">
                             <strong for="userName" class="form-label">Student Full Name</strong>
@@ -136,9 +149,6 @@ $conn->close();
                             </div>
                         </div>
                     </form>
-                <?php endif; ?>
-            </div>
-        </div>
-    </div>
-</body>
-</html>
+</div>
+</div>
+</div>
