@@ -103,10 +103,12 @@ if (isset($_POST['submit'])) {
                         <?php echo $successMessage; ?>
                     </div>
                 <?php elseif (isset($errorMessage)) : ?>
-<div class="alert alert-danger" role="alert">
-<?php echo $errorMessage; ?>
-</div>
-<?php endif; ?>  <!-- Form content goes here -->
+                    <div class="alert alert-danger" role="alert">
+                        <?php echo $errorMessage; ?>
+                    </div>
+                <?php endif; ?>  
+                
+<!-- Form content goes here -->
                     <form class="row g-3" action="<?php echo htmlentities($_SERVER['PHP_SELF']) ?>" method="POST" enctype="multipart/form-data">
                         <div class="col-12">
                             <strong for="userName" class="form-label">Student Full Name</strong>
