@@ -34,14 +34,14 @@ if ($result && $result->num_rows > 0) {
     $companyName = isset($fileNameParts[1]) ? $fileNameParts[1] : "";
 
     // Update the company_name column in the applications table with the announcement title
-    $updateSql = "UPDATE applications SET company_name='$announcementTitle' WHERE company_name='$companyName'";
-    $conn->query($updateSql);
+    $updateSql = "UPDATE applications SET company_name=? WHERE company_name=?";
+    $stmt = $conn->prepare($updateSql);
+    $stmt->bind_param("ss", $announcementTitle, $companyName);
+    $stmt->execute();
+    $stmt->close();
 } else {
     $announcementTitle = "XYZ Pvt Ltd"; // Set a default announcement title
 }
-
-// Close the database connection
-$conn->close();
 
 // Check if the form is submitted
 if (isset($_POST['submit'])) {
@@ -63,7 +63,6 @@ if (isset($_POST['submit'])) {
         // Move the uploaded file to the target directory
         if (move_uploaded_file($resume['tmp_name'], $targetDirectory . $filename)) {
             // Insert the data into the "Applications" table
-            $conn = new mysqli($servername, $username, $password, $dbname); // Reconnect to the database
             $sql = "INSERT INTO Applications (student_name, admission_no, contact_no, student_location, cv_file, application_date) VALUES (?, ?, ?, ?, ?, NOW())";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("sssss", $userName, $admissionNo, $contact, $studentLocation, $filename);
@@ -72,9 +71,6 @@ if (isset($_POST['submit'])) {
 
             // Display success message
             $successMessage = "Successfully applied for $announcementTitle.<br>You have successfully registered for $announcementTitle. Please keep checking your email inbox for further updates.";
-
-            // Close the database connection
-            $conn->close();
         } else {
             // Display error message
             $errorMessage = "Failed to move the uploaded file.";
@@ -84,6 +80,9 @@ if (isset($_POST['submit'])) {
         $errorMessage = "Please select a valid PDF file.";
     }
 }
+
+// Close the database connection
+$conn->close();
 ?>
 
 <body>
@@ -151,6 +150,7 @@ if (isset($_POST['submit'])) {
                             </div>
                         </div>
                     </form>
-</div>
-</div>
-</div>
+            </div>
+        </div>
+    </div>
+</body>
