@@ -63,9 +63,9 @@ if (isset($_POST['submit'])) {
         // Move the uploaded file to the target directory
         if (move_uploaded_file($resume['tmp_name'], $targetDirectory . $filename)) {
             // Insert the data into the "Applications" table
-            $sql = "INSERT INTO Applications (student_name, admission_no, contact_no, student_location, cv_file, application_date) VALUES (?, ?, ?, ?, ?, NOW())";
+            $sql = "INSERT INTO applications (student_name, admission_no, contact_no, student_location, cv_file, application_date, company_name) VALUES (?, ?, ?, ?, ?, NOW(), ?)";
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("sssss", $userName, $admissionNo, $contact, $studentLocation, $filename);
+            $stmt->bind_param("ssssss", $userName, $admissionNo, $contact, $studentLocation, $filename, $announcementTitle);
             $stmt->execute();
             $stmt->close();
 
@@ -106,7 +106,7 @@ $conn->close();
                         <?php echo $errorMessage; ?>
                     </div>
                 <?php endif; ?>  
-                
+
 <!-- Form content goes here -->
                     <form class="row g-3" action="<?php echo htmlentities($_SERVER['PHP_SELF']) ?>" method="POST" enctype="multipart/form-data">
                         <div class="col-12">
