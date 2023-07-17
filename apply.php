@@ -54,15 +54,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["submit"])) {
         // Move the uploaded file to the target directory
         if (move_uploaded_file($resume["tmp_name"], $targetDirectory . $filename)) {
             // Insert the data into the "Applications" table
-            $sql = "INSERT INTO Applications (student_name, admission_no, contact_no, student_location, cv_file, company_name, application_date) VALUES (?, ?, ?, ?, ?, ?, NOW())";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("ssssss", $userName, $admissionNo, $contactNo, $studentLocation, $filename, $announcementTitle);
-            $stmt->execute();
-            $stmt->close();
+$sql = "INSERT INTO Applications (student_name, admission_no, contact_no, student_location, resume, cv_file, company_name, application_date) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("sssssss", $userName, $admissionNo, $contactNo, $studentLocation, $filename, $filename, $announcementTitle);
+$stmt->execute();
+$stmt->close();
+
 
             // Display success message
             $successMessage = "Applying for " . $announcementTitle . " has been successful.";
-        } else {
+                } else {
             // Display error message
             $errorMessage = "Failed to move the uploaded file.";
         }
