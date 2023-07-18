@@ -1,5 +1,5 @@
 <?php
-// Connect to MySQL database
+// Connect to the database
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -12,9 +12,9 @@ if ($conn->connect_error) {
 
 // Get the certificate file name from the query string
 if (isset($_GET['file'])) {
-    $certificateFileName = $_GET['file'];
+    $certificateFileName = basename($_GET['file']); // Sanitize the file name
 
-    // Retrieve the certificate record from the database using prepared statement
+    // Use prepared statement to prevent SQL injection
     $sql = "SELECT certificate_file FROM internship_certificates WHERE certificate_file = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $certificateFileName);
@@ -22,13 +22,19 @@ if (isset($_GET['file'])) {
     $result = $stmt->get_result();
 
     if ($result->num_rows > 0) {
-        // File exists, so send it for download
+        // File exists, fetch PDF data from the database
         $row = $result->fetch_assoc();
-        $filePath = $row['certificate_file'];
+        $pdfData = $row['certificate_file'];
 
+        // Close the database connection
+        $stmt->close();
+        $conn->close();
+
+        // Send PDF data to the browser
         header('Content-Type: application/pdf');
-        header('Content-Disposition: attachment; filename="' . $certificateFileName . '"');
-        readfile($filePath);
+        header('Content-Disposition: inline; filename="' . $certificateFileName . '"');
+        echo $pdfData;
+        exit;
     } else {
         http_response_code(404);
         die('Certificate not found.');
@@ -37,8 +43,4 @@ if (isset($_GET['file'])) {
     http_response_code(400);
     die('Invalid request.');
 }
-
-// Close the database connection
-$stmt->close();
-$conn->close();
 ?>
