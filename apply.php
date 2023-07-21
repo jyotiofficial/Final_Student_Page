@@ -4,68 +4,90 @@ $style = "./styles/global.css";
 $favicon = "../../assets/favicon.ico";
 include_once("../../components/head.php");
 
-// Connect to the database
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "internship_portal";
-
-// Create a connection
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Check the connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
-
-// Retrieve the announcement titles from the new_announcement table
-$sql = "SELECT announcement_id, announcement_title FROM new_announcement";
-$result = $conn->query($sql);
-
-// Prepare the success and error message variables
-$successMessage = "";
-$errorMessage = "";
+include "../../connect/connect.php";
 
 // Check if the form is submitted
-if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["submit"])) {
-    $userName = $_POST["userName"];
-    $admissionNo = $_POST["admissionNo"];
-    $contactNo = $_POST["Contact"];
-    $studentLocation = $_POST["StudentLocation"];
-    $announcementId = $_POST["announcementId"];
-    $resume = $_FILES["resume"];
+if (isset($_POST['submit'])) {
+    // ... (previous code here)
 
-    // Check if a file is selected
-    if (isset($resume) && $resume["error"] === UPLOAD_ERR_OK) {
-        // Specify the target directory to store the uploaded files
-        $targetDirectory = __DIR__ . "/CV_Uploads/";
+    // Retrieve the announcement ID based on the announcement title
+    $sqlGetAnnouncementId = "SELECT announcement_id FROM new_announcement WHERE announcement_title = ?";
+    $stmtGetAnnouncementId = $db_connection->prepare($sqlGetAnnouncementId);
+    $stmtGetAnnouncementId->bind_param("s", $announcementTitle);
+    $stmtGetAnnouncementId->execute();
+    $resultGetAnnouncementId = $stmtGetAnnouncementId->get_result();
 
-        // Retrieve the selected announcement title based on the announcement ID
-        $stmt = $conn->prepare("SELECT announcement_title FROM new_announcement WHERE announcement_id = ?");
-        $stmt->bind_param("i", $announcementId);
+    // Initialize the variable
+    $announcementId = 1; // Set a default announcement ID
+
+    // Check if there is any announcement with the given title
+    if ($resultGetAnnouncementId && $resultGetAnnouncementId->num_rows > 0) {
+        // Fetch the announcement ID
+        $rowGetAnnouncementId = $resultGetAnnouncementId->fetch_assoc();
+        $announcementId = $rowGetAnnouncementId['announcement_id'];
+    } else {
+        // If no announcement is found with the given title, insert a new record with the announcement title
+        $sqlInsertNewAnnouncement = "INSERT INTO new_announcement (announcement_title) VALUES (?)";
+        $stmtInsertNewAnnouncement = $db_connection->prepare($sqlInsertNewAnnouncement);
+        $stmtInsertNewAnnouncement->bind_param("s", $announcementTitle);
+        $stmtInsertNewAnnouncement->execute();
+        $stmtInsertNewAnnouncement->close();
+
+        // Retrieve the newly inserted announcement ID
+        $announcementId = $db_connection->insert_id;
+    }
+
+    // Now $announcementId holds the correct announcement_id associated with the provided announcement_title
+
+    // Move the uploaded file to the target directory
+    if (move_uploaded_file($resume['tmp_name'], $targetDirectory . $filename)) {
+        // Insert the data into the "Applications" table
+        $sql = "INSERT INTO applications (student_name, admission_no, contact_no, student_location, cv_file, application_date, company_name, announcement_id) VALUES (?, ?, ?, ?, ?, NOW(), ?, ?)";
+        $stmt = $db_connection->prepare($sql);
+        $stmt->bind_param("ssssssi", $userName, $admissionNo, $contact, $studentLocation, $filename, $announcementTitle, $announcementId);
         $stmt->execute();
-        $stmt->bind_result($announcement_title);
-        $stmt->fetch();
         $stmt->close();
 
+        // Display success message
+        $successMessage = "Successfully applied for $announcementTitle.<br>You have successfully registered for $announcementTitle. Please keep checking your email inbox for further updates.";
+    } else {
+        // Display error message
+        $errorMessage = "Failed to move the uploaded file.";
+    }
+
+    // Close the statement
+    $stmtGetAnnouncementId->close();
+}
+
+
+// Check if the form is submitted
+if (isset($_POST['submit'])) {
+    // Retrieve the form data
+    $userName = $_POST['userName'];
+    $admissionNo = $_POST['admissionNo'];
+    $contact = $_POST['Contact'];
+    $studentLocation = $_POST['StudentLocation'];
+    $resume = $_FILES['resume'];
+
+    // Check if a file is selected
+    if (isset($resume) && $resume['error'] === UPLOAD_ERR_OK) {
+        // Specify the target directory to store the uploaded files
+        $targetDirectory = __DIR__. "/CV_Uploads/";
+
         // Generate a unique filename based on the given format
-        $filename = $userName . "_" . $announcement_title . "_" . $admissionNo . ".pdf";
+        $filename = str_replace(' ', '_', $userName) . "_" . str_replace(' ', '_', $announcementTitle) . "_" . str_replace(' ', '_', $admissionNo) . ".pdf";
 
         // Move the uploaded file to the target directory
-        if (move_uploaded_file($resume["tmp_name"], $targetDirectory . $filename)) {
-            // Read the PDF file contents
-            $pdfData = file_get_contents($targetDirectory . $filename);
-
+        if (move_uploaded_file($resume['tmp_name'], $targetDirectory . $filename)) {
             // Insert the data into the "Applications" table
-            $sql = "INSERT INTO applications (student_name, admission_no, contact_no, student_location, resume, cv_file, announcement_title, application_date) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("ssssbss", $userName, $admissionNo, $contactNo, $studentLocation, $pdfData, $filename, $announcement_title);
-            $stmt->send_long_data(4, $pdfData); // Send the large data for the 'resume' column
+            $sql = "INSERT INTO applications (student_name, admission_no, contact_no, student_location, cv_file, application_date, company_name, announcement_id) VALUES (?, ?, ?, ?, ?, NOW(), ?, ?)";
+            $stmt = $db_connection->prepare($sql);
+            $stmt->bind_param("ssssssi", $userName, $admissionNo, $contact, $studentLocation, $filename, $announcementTitle, $id);
             $stmt->execute();
             $stmt->close();
 
             // Display success message
-            $successMessage = "Applying for " . $announcement_title . " has been successful.";
+            $successMessage = "Successfully applied for $announcementTitle.<br>You have successfully registered for $announcementTitle. Please keep checking your email inbox for further updates.";
         } else {
             // Display error message
             $errorMessage = "Failed to move the uploaded file.";
@@ -77,41 +99,30 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["submit"])) {
 }
 
 // Close the database connection
-$conn->close();
+$db_connection->close();
 ?>
 
-<!DOCTYPE html>
-<html>
-<head>
-    <title><?php echo $title; ?></title>
-    <link rel="stylesheet" href="<?php echo $style; ?>">
-    <link rel="icon" href="<?php echo $favicon; ?>">
-</head>
 <body>
-    <?php
-    include_once("../../components/navbar/index.php");
-    ?>
+    <?php include_once("../../components/navbar/index.php"); ?>
 
     <div class="container my-2 greet">
-        <p>Applying for <?php echo isset($announcement_title) ? $announcement_title : ""; ?></p>
+        <p>Applying for <?php echo $announcementTitle; ?></p>
     </div>
 
     <div class="container my-3" id="content">
         <div class="container my-3 text-justify" id="content">
             <div class="bg-light p-5 rounded">
-                <?php if (!empty($successMessage)) : ?>
+                <?php if (isset($successMessage)) : ?>
                     <div class="alert alert-success" role="alert">
                         <?php echo $successMessage; ?>
                     </div>
-                <?php endif; ?>
-
-                <?php if (!empty($errorMessage)) : ?>
+                <?php elseif (isset($errorMessage)) : ?>
                     <div class="alert alert-danger" role="alert">
                         <?php echo $errorMessage; ?>
                     </div>
-                <?php endif; ?>
+                <?php endif; ?>  
 
-                <form class="row g-3" action="<?php echo htmlentities($_SERVER["PHP_SELF"]); ?>" method="POST" enctype="multipart/form-data">
+                <form class="row g-3" action="<?php echo htmlentities($_SERVER['PHP_SELF']) ?>?id=<?php echo $id; ?>" method="POST" enctype="multipart/form-data">
                     <div class="col-12">
                         <strong for="userName" class="form-label">Student Full Name</strong>
                         <input type="text" class="form-control" spellcheck="false" required autocomplete="off" name="userName" id="userName" placeholder="John Richard Doe">
@@ -129,21 +140,6 @@ $conn->close();
                         <input type="text" class="form-control" spellcheck="false" required autocomplete="off" name="StudentLocation" id="StudentLocation" placeholder="e.g. Panvel">
                     </div>
                     <div class="col-12">
-                        <strong for="announcementId" class="form-label">Company Name (Announcement Title)</strong>
-                        <select class="form-select" name="announcementId" id="announcementId" required>
-                            <option value="">Select Announcement</option>
-                            <?php
-                            if ($result && $result->num_rows > 0) {
-                                while ($row = $result->fetch_assoc()) {
-                                    $id = $row['announcement_id'];
-                                    $title = $row['announcement_title'];
-                                    echo "<option value=\"$id\">$title</option>";
-                                }
-                            }
-                            ?>
-                        </select>
-                    </div>
-                    <div class="col-12">
                         <strong for="resume" class="form-label">Upload CV</strong>
                         <input type="file" accept=".pdf" class="form-control" spellcheck="false" required autocomplete="off" name="resume" id="resume">
                         <br>
@@ -153,9 +149,9 @@ $conn->close();
                                 <i>
                                     CV format
                                     <br>
-                                    <b class="text-danger bg-warning">Student-name_Announcement-title_Admission-no.pdf</b>
+                                    <b class="text-danger bg-warning">Student-name_Company-name_Admission-no.pdf</b>
                                     <br>
-                                    (JohnDoe_<?php echo isset($announcement_title) ? $announcement_title : ""; ?>_2000PE0400.pdf)
+                                    (JohnDoe_MarkIndustries_2000PE0400.pdf)
                                 </i>
                             </small>
                         </div>
@@ -172,4 +168,3 @@ $conn->close();
         </div>
     </div>
 </body>
-</html>
