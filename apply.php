@@ -10,8 +10,8 @@ include "../../connect/connect.php";
 // Retrieve the ID from the URL
 $id = isset($_GET['id']) ? $_GET['id'] : 1;
 
-// Retrieve the announcement title from the new_announcement table
-$sql = "SELECT announcement_title FROM new_announcement WHERE announcement_id = $id";
+// Retrieve the announcement title from the new_annoucement table
+$sql = "SELECT announcement_title FROM new_annoucement WHERE announcement_id = $id";
 $result = $db_connection->query($sql);
 
 // Initialize the variable
