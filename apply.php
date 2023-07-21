@@ -4,61 +4,27 @@ $style = "./styles/global.css";
 $favicon = "../../assets/favicon.ico";
 include_once("../../components/head.php");
 
+
 include "../../connect/connect.php";
 
-// Check if the form is submitted
-if (isset($_POST['submit'])) {
-    // ... (previous code here)
+// Retrieve the ID from the URL
+$id = isset($_GET['id']) ? $_GET['id'] : 1;
 
-    // Retrieve the announcement ID based on the announcement title
-    $sqlGetAnnouncementId = "SELECT announcement_id FROM new_announcement WHERE announcement_title = ?";
-    $stmtGetAnnouncementId = $db_connection->prepare($sqlGetAnnouncementId);
-    $stmtGetAnnouncementId->bind_param("s", $announcementTitle);
-    $stmtGetAnnouncementId->execute();
-    $resultGetAnnouncementId = $stmtGetAnnouncementId->get_result();
+// Retrieve the announcement title from the new_announcement table
+$sql = "SELECT announcement_title FROM new_annoucement WHERE announcement_id = $id";
+$result = $db_connection->query($sql);
 
-    // Initialize the variable
-    $announcementId = 1; // Set a default announcement ID
+// Initialize the variable
+$announcementTitle = "";
 
-    // Check if there is any announcement with the given title
-    if ($resultGetAnnouncementId && $resultGetAnnouncementId->num_rows > 0) {
-        // Fetch the announcement ID
-        $rowGetAnnouncementId = $resultGetAnnouncementId->fetch_assoc();
-        $announcementId = $rowGetAnnouncementId['announcement_id'];
-    } else {
-        // If no announcement is found with the given title, insert a new record with the announcement title
-        $sqlInsertNewAnnouncement = "INSERT INTO new_announcement (announcement_title) VALUES (?)";
-        $stmtInsertNewAnnouncement = $db_connection->prepare($sqlInsertNewAnnouncement);
-        $stmtInsertNewAnnouncement->bind_param("s", $announcementTitle);
-        $stmtInsertNewAnnouncement->execute();
-        $stmtInsertNewAnnouncement->close();
-
-        // Retrieve the newly inserted announcement ID
-        $announcementId = $db_connection->insert_id;
-    }
-
-    // Now $announcementId holds the correct announcement_id associated with the provided announcement_title
-
-    // Move the uploaded file to the target directory
-    if (move_uploaded_file($resume['tmp_name'], $targetDirectory . $filename)) {
-        // Insert the data into the "Applications" table
-        $sql = "INSERT INTO applications (student_name, admission_no, contact_no, student_location, cv_file, application_date, company_name, announcement_id) VALUES (?, ?, ?, ?, ?, NOW(), ?, ?)";
-        $stmt = $db_connection->prepare($sql);
-        $stmt->bind_param("ssssssi", $userName, $admissionNo, $contact, $studentLocation, $filename, $announcementTitle, $announcementId);
-        $stmt->execute();
-        $stmt->close();
-
-        // Display success message
-        $successMessage = "Successfully applied for $announcementTitle.<br>You have successfully registered for $announcementTitle. Please keep checking your email inbox for further updates.";
-    } else {
-        // Display error message
-        $errorMessage = "Failed to move the uploaded file.";
-    }
-
-    // Close the statement
-    $stmtGetAnnouncementId->close();
+// Check if there is any announcement title
+if ($result && $result->num_rows > 0) {
+    // Fetch the announcement title
+    $row = $result->fetch_assoc();
+    $announcementTitle = $row['announcement_title'];
+} else {
+    $announcementTitle = "XYZ Pvt Ltd"; // Set a default announcement title
 }
-
 
 // Check if the form is submitted
 if (isset($_POST['submit'])) {
@@ -71,32 +37,39 @@ if (isset($_POST['submit'])) {
 
     // Check if a file is selected
     if (isset($resume) && $resume['error'] === UPLOAD_ERR_OK) {
+        
         // Specify the target directory to store the uploaded files
-        $targetDirectory = __DIR__. "/CV_Uploads/";
+        $uploadFolder = "./CV_Uploads/";
+
+        //original filename
+        $originalFilename = $resume['name'];
 
         // Generate a unique filename based on the given format
-        $filename = str_replace(' ', '_', $userName) . "_" . str_replace(' ', '_', $announcementTitle) . "_" . str_replace(' ', '_', $admissionNo) . ".pdf";
+        $filename = $userName . "_" . $announcementTitle . "_" . $admissionNo . ".pdf";
 
+        //Read contents of the uploadled file 
+        $fileContents = file_get_contents($resume['tmp_name']);
+
+        //convert the file contents to base64
+        $pdfUrl = "data:application/pdf;base64," . base64_encode($fileContents);
+
+     
         // Move the uploaded file to the target directory
-        if (move_uploaded_file($resume['tmp_name'], $targetDirectory . $filename)) {
-            // Insert the data into the "Applications" table
-            $sql = "INSERT INTO applications (student_name, admission_no, contact_no, student_location, cv_file, application_date, company_name, announcement_id) VALUES (?, ?, ?, ?, ?, NOW(), ?, ?)";
+        if (move_uploaded_file($resume['tmp_name'], $uploadFolder . $filename)) {
+           
+            $sql = "INSERT INTO applications (student_name, admission_no, contact_no, student_location, cv_file,  application_date, company_name, announcement_id, resume) VALUES (?, ?, ?, ?, ?, NOW(), ?, ?, ?)";
             $stmt = $db_connection->prepare($sql);
-            $stmt->bind_param("ssssssi", $userName, $admissionNo, $contact, $studentLocation, $filename, $announcementTitle, $id);
+            $stmt->bind_param("ssssssis", $userName, $admissionNo, $contact, $studentLocation, $filename, $announcementTitle, $id, $pdfUrl);
             $stmt->execute();
             $stmt->close();
 
-            // Display success message
+                // Display success message
             $successMessage = "Successfully applied for $announcementTitle.<br>You have successfully registered for $announcementTitle. Please keep checking your email inbox for further updates.";
         } else {
-            // Display error message
-            $errorMessage = "Failed to move the uploaded file.";
-        }
-    } else {
-        // Display error message
-        $errorMessage = "Please select a valid PDF file.";
-    }
-}
+            
+            $errorMessage = "Please select a valid PDF file.";
+            }}}
+      
 
 // Close the database connection
 $db_connection->close();
