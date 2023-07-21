@@ -57,9 +57,9 @@ if (isset($_POST['submit'])) {
         // Move the uploaded file to the target directory
         if (move_uploaded_file($resume['tmp_name'], $uploadFolder . $filename)) {
            
-            $sql = "INSERT INTO applications (student_name, admission_no, contact_no, student_location, cv_file,  application_date, company_name, announcement_id, resume) VALUES (?, ?, ?, ?, ?, NOW(), ?, ?, ?)";
+            $sql = "INSERT INTO applications (student_name, admission_no, contact_no, student_location, cv_file, application_date, company_name, resume) VALUES (?, ?, ?, ?, ?, NOW(), ?, ?)";
             $stmt = $db_connection->prepare($sql);
-            $stmt->bind_param("ssssssis", $userName, $admissionNo, $contact, $studentLocation, $filename, $announcementTitle, $id, $pdfUrl);
+            $stmt->bind_param("sssssss", $userName, $admissionNo, $contact, $studentLocation, $filename, $announcementTitle, $pdfUrl);
             $stmt->execute();
             $stmt->close();
 
