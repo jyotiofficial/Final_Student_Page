@@ -41,7 +41,11 @@ mysqli_close($connection);
     <link rel="stylesheet" type="text/css" href="<?php echo $style; ?>">
     <link rel="icon" type="image/x-icon" href="<?php echo $favicon; ?>">
     <style>
-        .status-active {
+        .status-pending {
+            color: gray;
+        }
+
+        .status-approved {
             color: green;
         }
 
@@ -67,7 +71,7 @@ mysqli_close($connection);
 
         <?php if (isset($_GET['success']) && $_GET['success'] == 1): ?>
             <div class="alert alert-success">
-                <strong>Success!</strong> Certificate uploaded successfully.
+                <strong>Success!</strong> Letter uploaded successfully.
             </div>
         <?php endif; ?>
 
@@ -79,7 +83,6 @@ mysqli_close($connection);
                         <th>Company</th>
                         <th>Date</th>
                         <th>Status</th>
-                        <th>Certificate of Completion</th>
                         <th>Letter</th>
                     </tr>
                 </thead>
@@ -90,28 +93,34 @@ mysqli_close($connection);
                             <td><?php echo $application['CompanyName']; ?></td>
                             <td><?php echo $application['startDate']; ?></td>
                             <td>
-                                <?php if ($application['Status'] == 'Approved'): ?>
-                                    <span class="status-approved">Approved</span>
-                                <?php elseif ($application['Status'] == 'Rejected'): ?>
-                                    <span class="status-rejected">Rejected</span>
+                                <?php
+                                // Ensure the "Status" value is one of the specified options
+                                $status = $application['Status'];
+                                if ($status === 'approved' || $status === 'rejected') {
+                                    echo '<span class="status-' . $status . '">' . ucfirst($status) . '</span>';
+                                } else {
+                                    echo '<span class="status-pending">Pending</span>';
+                                }
+                                ?>
+                            </td>
+                            <td>
+                                <?php if ($status === 'rejected'): ?>
+                                    <!-- Displaying an empty cell for "Rejected" status -->
+                                    <?php echo '---'; ?>
+                                <?php elseif ($status === 'approved' && !empty($application['Letter'])): ?>
+                                    <!-- "View" button for "Approved" status with no download access -->
+                                    <a href="<?php echo $application['Letter']; ?>" target="_blank">View Letter</a>
                                 <?php else: ?>
-                                    <?php echo $application['Status']; ?>
+                                    <!-- "No Letter" for "Approved" status with no download access -->
+                                    No Letter
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <?php if (!empty($application['Certificate_LOR'])): ?>
-                                    <a href="<?php echo $application['Certificate_LOR']; ?>" target="_blank">View Certificate</a>
-                                <?php else: ?>
-                                    No Certificate
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <?php if (!empty($application['Certificate_LOR'])): ?>
-                                    <a href="<?php echo $application['Certificate_LOR']; ?>" download>Download Certificate</a>
-                                <?php else: ?>
-                                    <form action="upload_certificate.php" method="POST" enctype="multipart/form-data">
+                                <?php if ($status === 'approved' && empty($application['Letter'])): ?>
+                                    <!-- Upload form for "Approved" status with no existing letter -->
+                                    <form action="upload_letter.php" method="POST" enctype="multipart/form-data">
                                         <input type="hidden" name="application_id" value="<?php echo $application['ID']; ?>">
-                                        <input type="file" name="certificate" accept=".pdf" required>
+                                        <input type="file" name="letter" accept=".pdf" required>
                                         <button type="submit">Upload</button>
                                     </form>
                                 <?php endif; ?>
