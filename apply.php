@@ -11,7 +11,7 @@ include "../../connect/connect.php";
 $id = isset($_GET['id']) ? $_GET['id'] : 1;
 
 // Retrieve the announcement title from the new_announcement table
-$sql = "SELECT announcement_title FROM new_annoucement WHERE announcement_id = $id";
+$sql = "SELECT announcement_title FROM new_announcement WHERE announcement_id = $id";
 $result = $db_connection->query($sql);
 
 // Initialize the variable
