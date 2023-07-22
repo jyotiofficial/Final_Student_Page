@@ -133,14 +133,12 @@ if (isset($_POST['submit'])) {
                 <div class="col-md-6">
                     <label for="branch" class="form-label">Branch</label>
                     <select class="form-select" id="branch" name="branch" required>
-                        <option value="AUTO">AUTO</option>   
-                        <option value="COMP">COMP</option>
-                        <option value="IT">IT</option>
-                        <option value="ECS">ECS</option>   
-                        <option value="EXTC">EXTC</option>
-                        <option value="MECH">MECH</option>
-
-                        <!-- Add more options as needed -->
+                    <option value="Automobile Engineering">Automobile Engineering</option>
+                        <option value="Computer Engineering">Computer Engineering</option>
+                        <option value="Information Technology">Information Technology</option>
+                        <option value="Electronics and Computer Science">Electronics and Computer Science</option>
+                        <option value="Electronics and Telecommunication">Electronics and Telecommunication</option>
+                        <option value="Mechanical Engineering">Mechanical Engineering</option>
                     </select>
                 </div>
                 <div class="col-md-6">
@@ -152,8 +150,8 @@ if (isset($_POST['submit'])) {
                         <option value="Semester 4">Semester 4</option>
                         <option value="Semester 5">Semester 5</option>
                         <option value="Semester 6">Semester 6</option>
-
-                        <!-- Add more options as needed -->
+                        <option value="Semester 7">Semester 7</option>
+                        <option value="Semester 8">Semester 8</option>
                     </select>
                 </div>
                 <div class="col-md-6">
