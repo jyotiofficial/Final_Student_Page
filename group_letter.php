@@ -102,6 +102,10 @@ if ($result->num_rows > 0) {
     $pdf->Cell(70, 15, "Dear Sir,", 0, 1, "L");
 
     // Using the fetched intern names and the groupID
+    $pdf->Write(8, "With reference to the above subject, the following students of semester ".$semester.", ".$branch. " would like to undertake internship training in your esteemed organization:");
+$pdf->Cell(0, 10, "", 0, 1);
+$pdf->SetLeftMargin(35);
+$pdf->SetFont('Times', 'B');
     $pdf->SetLeftMargin(45);
     for ($i = 0; $i < count($internNames); $i++) {
         $pdf->Write(8, chr(97 + $i) . ") " . $internNames[$i]);
