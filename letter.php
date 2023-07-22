@@ -12,43 +12,32 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 
 // Check if the connection is successful
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    // Display detailed error message
+    die("Connection failed: " . $conn->connect_error . " (Error code: " . $conn->connect_errno . ")");
 }
 
-// Fetch the value of 'name' from the 'student' table in attribute 's_name'
-$tableName = 'student';
-$columnName = 's_name';
-$alias = 'name';
-$query = "SELECT $columnName AS $alias FROM $tableName";
-$result = mysqli_query($conn, $query);
-
-if ($result) {
-    $row = mysqli_fetch_assoc($result);
-    $studentName = $row[$alias]; // Fetch the 'name' as 's_name'
-} else {
-    echo "Failed to fetch student name.";
-}
-
-// Fetch the value of 'application_date' from table 'applications'
+// Fetch the value of 'student_name' and 'application_date' from table 'applications'
 $tableName = 'applications';
-$columnName = 'application_date';
-$alias = 'application_date';
-$query = "SELECT $columnName AS $alias FROM $tableName";
+$columnName = 'student_name, application_date';
+$query = "SELECT $columnName FROM $tableName";
 $result = mysqli_query($conn, $query);
 
 if ($result) {
     $row = mysqli_fetch_assoc($result);
-    $applicationDate = $row[$alias]; // Fetch the 'application_date'
+    $studentName = $row['student_name']; // Fetch the 'student_name'
+    $applicationDate = $row['application_date']; // Fetch the 'application_date'
 } else {
-    echo "Failed to fetch application date.";
+    echo "Failed to fetch student name and application date.";
 }
 
-// Fetch data from the database
-$sql = "SELECT * FROM internship_applications ORDER BY ID DESC LIMIT 1";
-$result = $conn->query($sql);
+// Fetch the value of 'ID', 'startDate', 'endDate', 'year', 'branch', 'AcademicYear', 'CompanyName', and 'CompanyAddress' from table 'internship_applications'
+$tableName = 'internship_applications';
+$columnName = 'ID, startDate, endDate, year, branch, AcademicYear, CompanyName, CompanyAddress';
+$query = "SELECT $columnName FROM $tableName ORDER BY ID DESC LIMIT 1";
+$result = mysqli_query($conn, $query);
 
 if ($result->num_rows > 0) {
-    $row = $result->fetch_assoc();
+    $row = mysqli_fetch_assoc($result);
 
     // Extract values from the fetched data
     $refrenceNumber = "CE/INTERN/" . sprintf("%04d", intval($row['ID']) + 1) . "/" . date('Y') . "-" . (date('y') + 1);
@@ -57,12 +46,16 @@ if ($result->num_rows > 0) {
     $applicationID = $row['ID'];
     $start_date = $row['startDate'];
     $end_date = $row['endDate'];
-    $year = $row['created_at'];
+    $year = $row['year'];
     $branch = $row['branch'];
-    $academicYear = $row['semester'];
+    $academicYear = $row['AcademicYear'];
     $company = $row['CompanyName'];
     $companyaddress = $row['CompanyAddress'];
 
+    // Close the database connection
+    $conn->close();
+
+    // Create the PDF
     $pdf = new FPDF('P', 'mm', 'Letter');
     $pdf->SetLeftMargin(30);
     $pdf->SetRightMargin(30);
@@ -84,11 +77,11 @@ if ($result->num_rows > 0) {
     $pdf->SetFont('Times', '');
     $pdf->Cell(70, 15, "Dear Sir,", 0, 1, "L");
 
-    $pdf->Write(8, "With reference to above subject we request you to permit our student ");
+    $pdf->Write(8, "With reference to above subject, we request you to permit our student ");
     $pdf->SetFont('Times', 'B');
     $pdf->Write(8, $name);
     $pdf->SetFont('Times', '');
-    $pdf->Write(8, " , who have appeared for " . $year . " ");
+    $pdf->Write(8, ", who has appeared for " . $year . " ");
     $pdf->SetFont('Times', 'B');
     $pdf->Write(8, $branch);
     $pdf->SetFont('Times', '');
@@ -96,22 +89,20 @@ if ($result->num_rows > 0) {
     $pdf->SetFont('Times', '');
     $pdf->Write(8, $start_date . " to " . $end_date);
     $pdf->SetFont('Times', '');
-    $pdf->Write(8, " and also on Saturdays, Sundays and Public Holidays, as the case may be.");
+    $pdf->Write(8, " and also on Saturdays, Sundays, and Public Holidays, as the case may be.");
     $pdf->Cell(0, 20, "", 0, 1);
-    $pdf->Write(8, "We will be grateful if your esteemed organization would help us to provide practical training for our student.");
+    $pdf->Write(8, "We will be grateful if your esteemed organization would help us provide practical training for our student.");
     $pdf->Cell(0, 15, "", 0, 1);
-    $pdf->Write(8, "This certificate is issued on request of student for Internship purpose.");
+    $pdf->Write(8, "This certificate is issued on the request of the student for Internship purposes.");
     $pdf->Cell(0, 15, "", 0, 1);
 
     $pdf->Cell(0, 10, "Thank you.", 0, 1);
     $pdf->Cell(0, 20, "Yours faithfully", 0, 1);
-
+    
     // Output the PDF inline
     $pdf->Output("I", "Intern_Application_" . $applicationID);
 } else {
     echo "No data found in the database.";
 }
 
-// Close the database connection
-$conn->close();
 ?>

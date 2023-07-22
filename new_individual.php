@@ -25,38 +25,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $Location = sanitize_input($_POST['Location']);
     $year = sanitize_input($_POST['year']);
 
-    // Perform server-side validation
-    $errors = [];
-
-    // Check if required fields are empty
-    if (empty($StudentName) || empty($AcademicYear) || empty($CompanyName) || empty($CompanyAddress) || empty($CompanyLocation) || empty($startDate) || empty($endDate) || empty($branch) || empty($semester) || empty($Stipend) || empty($Location) || empty($year)) {
-        $errors[] = "All fields are required.";
-    }
-
-    // Additional validation rules (if any)
-    // ...
-
-    if (empty($errors)) {
-        // Insert the data into the database
-        require_once('connect.php'); // Assuming the database configuration is in this file
-
-        // Use prepared statement to prevent SQL injection
-        $query = "INSERT INTO internship_applications (StudentName, AcademicYear, CompanyName, CompanyAddress, CompanyLocation, startDate, endDate, branch, semester, Stipend, Location, Year) 
-                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-        $stmt = mysqli_prepare($db_connection, $query);
-        mysqli_stmt_bind_param($stmt, "sssssssssssi", $StudentName, $AcademicYear, $CompanyName, $CompanyAddress, $CompanyLocation, $startDate, $endDate, $branch, $semester, $Stipend, $Location, $year);
-
-        if (mysqli_stmt_execute($stmt)) {
-            $success = true;
-        } else {
-            // Provide more informative error messages for database-related errors
-            $errors[] = "Failed to insert the data. Error: " . mysqli_error($db_connection);
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        // ... (previous code)
+    
+        if (empty($StudentName) || empty($AcademicYear) || empty($CompanyName) || empty($CompanyAddress) || empty($CompanyLocation) || empty($startDate) || empty($endDate) || empty($branch) || empty($semester) || empty($Stipend) || empty($Location) || empty($year)) {
+            $errors[] = "All fields are required.";
         }
-
-        // Close the statement and database connection
-        mysqli_stmt_close($stmt);
-        mysqli_close($db_connection);
+    
+        // Additional validation rules (if any)
+        // ...
+    
+        if (empty($errors)) {
+            // Insert the data into the database
+            require_once('connect.php'); // Assuming the database configuration is in this file
+    
+            // Use prepared statement to prevent SQL injection
+            $query = "INSERT INTO internship_applications (StudentName, AcademicYear, CompanyName, CompanyAddress, CompanyLocation, startDate, endDate, branch, semester, Stipend, Location, Year) 
+                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    
+            $stmt = mysqli_prepare($db_connection, $query);
+            mysqli_stmt_bind_param($stmt, "ssssssssssss", $StudentName, $AcademicYear, $CompanyName, $CompanyAddress, $CompanyLocation, $startDate, $endDate, $branch, $semester, $Stipend, $Location, $year);
+    
+            if (mysqli_stmt_execute($stmt)) {
+                $success = true;
+            } else {
+                // Provide more informative error messages for database-related errors
+                $errors[] = "Failed to insert the data. Error: " . mysqli_error($db_connection);
+            }
+    
+            // Close the statement and database connection
+            mysqli_stmt_close($stmt);
+            mysqli_close($db_connection);
+        }
     }
 }
 
@@ -129,12 +129,12 @@ include_once("../../components/head.php");
                 <div class="col-md-6">
                     <label for="branch" class="form-label">Branch</label>
                     <select class="form-select" id="branch" name="branch" required>
-                        <option value="AUTO">AUTO</option>
-                        <option value="COMP">COMP</option>
-                        <option value="IT">IT</option>
-                        <option value="ECS">ECS</option>
-                        <option value="EXTC">EXTC</option>
-                        <option value="MECH">MECH</option>
+                        <option value="Automobile Engineering">Automobile Engineering</option>
+                        <option value="Computer Engineering">Computer Engineering</option>
+                        <option value="Information Technology">Information Technology</option>
+                        <option value="Electronics and Computer Science">Electronics and Computer Science</option>
+                        <option value="Electronics and Telecommunication">Electronics and Telecommunication</option>
+                        <option value="Mechanical Engineering">Mechanical Engineering</option>
                     </select>
                 </div>
                 <div class="col-md-6">
@@ -153,10 +153,10 @@ include_once("../../components/head.php");
                 <div class="col-md-6">
     <label for="year" class="form-label">Year</label>
     <select class="form-select" id="year" name="year" required>
-        <option value="1">First Year</option>
-        <option value="2">Second Year</option>
-        <option value="3">Third Year</option>
-        <option value="4">Fourth Year</option>
+        <option value="First Year">First Year</option>
+        <option value="Second Year">Second Year</option>
+        <option value="Third Year">Third Year</option>
+        <option value="Fourth Year">Fourth Year</option>
     </select>
 </div>
 
