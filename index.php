@@ -3,14 +3,45 @@ $title = "Dashboard";
 $style = "./styles/global.css";
 $favicon = "../../assets/favicon.ico";
 include_once("../../components/head.php");
-// Remove the commented-out code related to authentication
+
+// Database connection setup - Replace with your database credentials
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "internship_portal";
+
+// Create connection
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Fetch student_name from the 'applications' table
+$student_name = "";
+$sql = "SELECT student_name FROM applications WHERE id = 1"; // Assuming you want to fetch the name for the application with ID 1
+$result = $conn->query($sql);
+if ($result->num_rows > 0) {
+    $row = $result->fetch_assoc();
+    $student_name = $row["student_name"];
+}
+
+$conn->close();
 ?>
 
 <body>
     <?php include_once("../../components/navbar/index.php"); ?>
 
     <div class="container my-2 greet">
-        <p>Welcome, Pratik</p>
+        <?php
+        // Display the fetched student name
+        if (!empty($student_name)) {
+            echo "<p>Welcome, " . $student_name . "</p>";
+        } else {
+            echo "<p>Welcome, Guest</p>";
+        }
+        ?>
     </div>
 
     <div class="container text-center">
