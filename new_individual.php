@@ -12,6 +12,8 @@ function sanitize_input($input)
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Validate and sanitize user input
+    $StudentName = sanitize_input($_POST['StudentName']);
+    $AcademicYear = sanitize_input($_POST['AcademicYear']);
     $CompanyName = sanitize_input($_POST['CompanyName']);
     $CompanyAddress = sanitize_input($_POST['CompanyAddress']);
     $CompanyLocation = sanitize_input($_POST['CompanyLocation']);
@@ -27,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $errors = [];
 
     // Check if required fields are empty
-    if (empty($CompanyName) || empty($CompanyAddress) || empty($CompanyLocation) || empty($startDate) || empty($endDate) || empty($branch) || empty($semester) || empty($Stipend) || empty($Location) || empty($year)) {
+    if (empty($StudentName) || empty($AcademicYear) || empty($CompanyName) || empty($CompanyAddress) || empty($CompanyLocation) || empty($startDate) || empty($endDate) || empty($branch) || empty($semester) || empty($Stipend) || empty($Location) || empty($year)) {
         $errors[] = "All fields are required.";
     }
 
@@ -39,11 +41,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         require_once('connect.php'); // Assuming the database configuration is in this file
 
         // Use prepared statement to prevent SQL injection
-        $query = "INSERT INTO internship_applications (CompanyName, CompanyAddress, CompanyLocation, startDate, endDate, branch, semester, Stipend, Location, Year) 
-                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $query = "INSERT INTO internship_applications (StudentName, AcademicYear, CompanyName, CompanyAddress, CompanyLocation, startDate, endDate, branch, semester, Stipend, Location, Year) 
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         $stmt = mysqli_prepare($db_connection, $query);
-        mysqli_stmt_bind_param($stmt, "sssssssssi", $CompanyName, $CompanyAddress, $CompanyLocation, $startDate, $endDate, $branch, $semester, $Stipend, $Location, $year);
+        mysqli_stmt_bind_param($stmt, "sssssssssssi", $StudentName, $AcademicYear, $CompanyName, $CompanyAddress, $CompanyLocation, $startDate, $endDate, $branch, $semester, $Stipend, $Location, $year);
 
         if (mysqli_stmt_execute($stmt)) {
             $success = true;
@@ -72,8 +74,8 @@ include_once("../../components/head.php");
     </div>
 
     <!-- Display success or error messages -->
-    <?php if (isset($_POST['submit'])): ?>
-        <?php if (!empty($success)): ?>
+    <?php if ($_SERVER['REQUEST_METHOD'] === 'POST'): ?>
+        <?php if (empty($errors)): ?>
             <div class="alert alert-success container col-8" role="alert">
                 <h2 class="alert-heading">Application Success</h2>
                 <hr>
@@ -96,6 +98,14 @@ include_once("../../components/head.php");
         <div class="bg-light p-5 rounded">
             <form class="row g-3" action="<?php echo htmlentities($_SERVER['PHP_SELF']) ?>" method="POST">
                 <!-- Form fields -->
+                <div class="col-md-6">
+                    <label for="StudentName" class="form-label">Student Name</label>
+                    <input type="text" class="form-control" id="StudentName" name="StudentName" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="AcademicYear" class="form-label">Academic Year</label>
+                    <input type="text" class="form-control" id="AcademicYear" name="AcademicYear" required>
+                </div>
                 <div class="col-md-6">
                     <label for="CompanyName" class="form-label">Company Name</label>
                     <input type="text" class="form-control" id="CompanyName" name="CompanyName" required>
@@ -141,14 +151,14 @@ include_once("../../components/head.php");
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label for="year" class="form-label">Year</label>
-                    <select class="form-select" id="year" name="year" required>
-                        <option value="First Year">First Year</option>
-                        <option value="Second Year">Second Year</option>
-                        <option value="Third Year">Third Year</option>
-                        <option value="Fourth Year">Fourth Year</option>
-                    </select>
-                </div>
+    <label for="year" class="form-label">Year</label>
+    <select class="form-select" id="year" name="year" required>
+        <option value="1">First Year</option>
+        <option value="2">Second Year</option>
+        <option value="3">Third Year</option>
+        <option value="4">Fourth Year</option>
+    </select>
+</div>
 
                 <div class="col-md-6">
                     <label for="Stipend" class="form-label">Stipend</label>
