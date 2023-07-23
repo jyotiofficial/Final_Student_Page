@@ -16,22 +16,22 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error . " (Error code: " . $conn->connect_errno . ")");
 }
 
-// Fetch the value of 'student_name' and 'application_date' from table 'group_students'
-$tableName = 'group_students';
-$columnName = 'StudentName, created_at';
+// Fetch the value of 'student_name' and 'application_date' from table 'applications'
+$tableName = 'applications';
+$columnName = 'student_name, application_date';
 $query = "SELECT $columnName FROM $tableName";
 $result = mysqli_query($conn, $query);
 
 if ($result) {
     $row = mysqli_fetch_assoc($result);
-    $studentName = $row['StudentName']; // Fetch the 'student_name'
-    $applicationDate = $row['created_at']; // Fetch the 'created_at'
+    $studentName = $row['student_name']; // Fetch the 'student_name'
+    $applicationDate = $row['application_date']; // Fetch the 'application_date'
 } else {
     echo "Failed to fetch student name and application date.";
 }
 
-// Fetch the value of 'ID', 'startDate', 'endDate', 'branch', 'semester', 'CompanyName', and 'CompanyAddress' from table 'group_students'
-$tableName = 'group_students';
+// Fetch the value of 'ID', 'startDate', 'endDate', 'branch', 'semester', 'CompanyName', and 'CompanyAddress' from table 'internship_applications'
+$tableName = 'internship_applications';
 $columnName = 'ID, startDate, endDate, branch, semester, CompanyName, CompanyAddress';
 $query = "SELECT $columnName FROM $tableName ORDER BY ID DESC LIMIT 1";
 $result = mysqli_query($conn, $query);
@@ -100,6 +100,8 @@ if ($result->num_rows > 0) {
     $pdf->Cell(80, 15, "Permission for Internship Training.", 0, 1, "L");
     $pdf->SetFont('Times', '');
     $pdf->Cell(70, 15, "Dear Sir,", 0, 1, "L");
+
+    // Using the fetched intern names and the groupID
     $pdf->Write(8, "With reference to the above subject, the following students of semester ".$semester.", ".$branch. " would like to undertake internship training in your esteemed organization:");
 $pdf->Cell(0, 10, "", 0, 1);
 $pdf->SetLeftMargin(35);
@@ -109,6 +111,7 @@ $pdf->SetFont('Times', 'B');
         $pdf->Write(8, chr(97 + $i) . ") " . $internNames[$i]);
         $pdf->Ln(8);
     }
+
     $pdf->SetLeftMargin(55);
     $pdf->Write(8, "Group ID: " . $groupID);
     $pdf->Ln(8);

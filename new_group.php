@@ -30,7 +30,7 @@ if (isset($_POST['submit'])) {
     $Location = mysqli_real_escape_string($db_connection, $_POST['Location']);
 
     // Prepare the query for group details
-    $groupQuery = "INSERT INTO group_students (CompanyName, CompanyAddress, CompanyLocation, startDate, endDate, branch, semester, Stipend, Location) 
+    $groupQuery = "INSERT INTO internship_applications (CompanyName, CompanyAddress, CompanyLocation, startDate, endDate, branch, semester, Stipend, Location) 
               VALUES ('$CompanyName', '$CompanyAddress', '$CompanyLocation', '$startDate', '$endDate', '$branch', '$semester', '$Stipend', '$Location')";
 
     // Execute the group details query
@@ -78,7 +78,6 @@ if (isset($_POST['submit'])) {
         exit();
     }
 }
-
 ?>
 
 <body>
