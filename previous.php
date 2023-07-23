@@ -3,10 +3,12 @@ $title = "Dashboard";
 $style = "./styles/global.css";
 $favicon = "../../assets/favicon.ico";
 include_once("../../components/head.php");
-require '../../Libraries/fpdf/fpdf.php';
 
-// Connect to your database (replace "your_host", "your_username", "your_password", and "your_database" with the appropriate values)
-$connection = mysqli_connect("localhost", "root", "", "internship_portal");
+// Include the configuration file
+require_once("config.php");
+
+// Connect to your database
+$connection = mysqli_connect($host, $username, $password, $database);
 if (!$connection) {
     die("Database connection failed: " . mysqli_connect_error());
 }
@@ -34,124 +36,8 @@ $previousApplications = mysqli_fetch_all($result, MYSQLI_ASSOC);
 // Close the database connection
 mysqli_close($connection);
 
-// Function to generate and save the letter as a PDF
-function generateLetter($refrenceNumber, $date, $name, $applicationID, $start_date, $end_date, $year, $branch, $academicYear, $company, $companyaddress)
-{
-   // Create a new PDF document
-    $pdf = new FPDF('P', 'mm', 'Letter');
-    $pdf->SetLeftMargin(30);
-    $pdf->SetRightMargin(30);
-    $pdf->SetTopMargin(40);
-    $pdf->AddPage();
-    $pdf->SetFont('Times', '');
-    $pdf->Cell(70, 20, "Ref. No.:" . $refrenceNumber, 0, 0, "L");
-    $pdf->Cell(90, 20, $date, 0, 1, "R");
-    $pdf->SetFont('Times', 'B');
-    $pdf->Cell(60, 6, "Manager", 0, 1, "L");
-    $pdf->SetFont('Times', '');
-    $pdf->Cell(60, 6, $company, 0, 1, "L");
-    $pdf->MultiCell(65, 6, $companyaddress . ",", 0, "L");
-    $pdf->SetFont('Times', 'B');
-    $pdf->Cell(0, 5, "", 0, 1);
-    $pdf->Cell(50, 15, "Subject :", 0, 0, "R");
-    $pdf->SetFont('Times', 'BU');
-    $pdf->Cell(80, 15, "Permission for Internship Training.", 0, 1, "L");
-    $pdf->SetFont('Times', '');
-    $pdf->Cell(70, 15, "Dear Sir,", 0, 1, "L");
-
-    $pdf->Write(8, "With reference to above subject we request you to permit our student ");
-    $pdf->SetFont('Times', 'B');
-    $pdf->Write(8, $name);
-    $pdf->SetFont('Times', '');
-    $pdf->Write(8, " , who have appeared for " . $year . " ");
-    $pdf->SetFont('Times', 'B');
-    $pdf->Write(8, $branch);
-    $pdf->SetFont('Times', '');
-    $pdf->Write(8, " examinations during a.y." . $academicYear . "to undertake internship training in your esteemed organization during their vacation ");
-    $pdf->SetFont('Times', '');
-    $pdf->Write(8, $start_date . " to " . $end_date);
-    $pdf->SetFont('Times', '');
-    $pdf->Write(8, " and also on Saturdays, Sundays and Public Holidays, as the case may be.");
-    $pdf->Cell(0, 20, "", 0, 1);
-    $pdf->Write(8, "We will be grateful if your esteemed organization would help us to provide practical training for our student.");
-    $pdf->Cell(0, 15, "", 0, 1);
-    $pdf->Write(8, "This certificate is issued on request of student for Internship purpose.");
-    $pdf->Cell(0, 15, "", 0, 1);
-
-    $pdf->Cell(0, 10, "Thank you.", 0, 1);
-    $pdf->Cell(0, 20, "Yours faithfully", 0, 1);
-
-    // Save the PDF to a file with a unique name
-    $pdfFileName = 'letter_' . $applicationID . '.pdf';
-    $pdfFilePath = './letters/' . $pdfFileName;
-    $pdf->Output($pdfFilePath, "F");
-
-    // Return the file path to be saved in the database
-    return $pdfFilePath;
-}
-
-// Check if $previousApplications is not empty before using it in the foreach loop
-if (!empty($previousApplications)) {
-    foreach ($previousApplications as $application) {
-        // Check if the 'Status' key exists in the $application array
-        if (isset($application['Status'])) {
-            // Assign the value of the 'Status' key to the $status variable
-            $status = $application['Status'];
-        } else {
-            // Set a default value for $status (e.g., 'pending')
-            $status = 'pending';
-        }
-
-        // ... (previous columns remain the same) ...
-        $tdContent = '';
-        if ($status === 'rejected') {
-            // Displaying an empty cell for "Rejected" status
-            $tdContent = '---';
-        } elseif ($status === 'approved') {
-            if (!empty($application['Letter'])) {
-                // "View" button for "Approved" status with no download access
-                $tdContent = '<a href="' . $application['Letter'] . '" target="_blank">View Letter</a>';
-            } else {
-                // Generate the letter content and save as PDF
-                $letterFilePath = generateLetter($refrenceNumber, $date, $name, $application['ID'], $start_date, $end_date, $year, $branch, $academicYear, $company, $companyaddress);
-
-                // Update the database with the generated letter path
-                $updateQuery = "UPDATE internship_applications SET Letter = '$letterFilePath' WHERE ID = " . $application['ID'];
-                mysqli_query($connection, $updateQuery);
-
-                // "View" button for the generated letter with no download access
-                $tdContent = '<a href="' . $letterFilePath . '" target="_blank">View Letter</a>';
-            }
-        } else {
-            // "No Letter" for "Pending" or "Rejected" status
-            $tdContent = 'No Letter';
-        }
-
-        // ... (remaining columns remain the same) ...
-
-        // Add the condition for displaying "View" button based on StudentName field
-        if (!empty($application['StudentName'])) {
-            echo "<td class='pt-3 text-center'>";
-            echo "<a href='./letter.php?ID=" . $application["ID"] . "' target='_blank' class='btn btn-warning'>";
-            echo "<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-eye-fill' viewBox='0 0 16 16'>";
-            echo "<path d='M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z' />";
-            echo "<path d='M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z' />";
-            echo "</svg>";
-            echo "</a>";
-            echo "</td>";
-        } else {
-            echo "<td class='pt-3 text-center'>";
-            echo "<a href='./group_letter.php?ID=" . $application["ID"] . "' target='_blank' class='btn btn-warning'>";
-            echo "<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-eye-fill' viewBox='0 0 16 16'>";
-            echo "<path d='M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z' />";
-            echo "<path d='M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z' />";
-            echo "</svg>";
-            echo "</a>";
-            echo "</td>";
-        }
-    }
-}
 ?>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -174,10 +60,6 @@ if (!empty($previousApplications)) {
 </head>
 <body>
     <?php include_once("../../components/navbar/index.php"); ?>
-
-    <div class="container my-2 greet">
-        <p>Previous Applications</p>
-    </div>
 
     <div class="container my-3" id="content">
         <form class="mb-3">
@@ -222,7 +104,19 @@ if (!empty($previousApplications)) {
                                 ?>
                             </td>
                             <td>
-                                <?php echo $tdContent; ?>
+                                <?php
+                                if ($status === 'approved') {
+                                    if (!empty($application['StudentName'])) {
+                                        echo '<a href="' . $lettersDirectory . 'letter_' . $application["ID"] . '.pdf" target="_blank">View Letter</a>';
+                                    } else {
+                                        echo '<a href="' . $lettersDirectory . 'group_letter_' . $application["ID"] . '.pdf" target="_blank">View Letter</a>';
+                                    }
+                                } elseif ($status === 'pending') {
+                                    echo 'No Letter';
+                                } else {
+                                    echo '---';
+                                }
+                                ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>
