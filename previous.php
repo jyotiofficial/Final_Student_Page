@@ -33,8 +33,52 @@ $previousApplications = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
 // Close the database connection
 mysqli_close($connection);
+foreach ($previousApplications as $application) {
+    // ...
+
+    // Generate the letter content and save as PDF
+    $letterFilePath = generateLetter(
+        isset($application['RefrenceNumber']) ? $application['RefrenceNumber'] : '',
+        isset($application['Date']) ? $application['Date'] : '',
+        isset($application['Name']) ? $application['Name'] : '',
+        $application['ID'],
+        isset($application['startDate']) ? $application['startDate'] : '',
+        isset($application['endDate']) ? $application['endDate'] : '',
+        isset($application['Year']) ? $application['Year'] : '',
+        isset($application['Branch']) ? $application['Branch'] : '',
+        isset($application['AcademicYear']) ? $application['AcademicYear'] : '',
+        isset($application['CompanyName']) ? $application['CompanyName'] : '',
+        isset($application['CompanyAddress']) ? $application['CompanyAddress'] : ''
+    );
+
+    // ...
+}
 
 // ... (previous code remains the same) ...
+foreach ($previousApplications as $application) {
+    // ...
+
+    // Generate the letter content and save as PDF
+    $letterFilePath = generateLetter(
+        $application['RefrenceNumber'],
+        $application['Date'],
+        $application['Name'],
+        $application['ID'],
+        $application['startDate'],
+        $application['endDate'],
+        $application['Year'],
+        $application['Branch'],
+        $application['AcademicYear'],
+        $application['CompanyName'],
+        $application['CompanyAddress']
+    );
+
+    // Update the database with the generated letter path
+    $updateQuery = "UPDATE internship_applications SET Letter = '$letterFilePath' WHERE ID = " . $application['ID'];
+    mysqli_query($connection, $updateQuery);
+
+    // ...
+}
 
 // Function to generate and save the letter as a PDF
 function generateLetter($refrenceNumber, $date, $name, $applicationID, $start_date, $end_date, $year, $branch, $academicYear, $company, $companyaddress)
@@ -83,10 +127,14 @@ function generateLetter($refrenceNumber, $date, $name, $applicationID, $start_da
     $pdf->Cell(0, 10, "Thank you.", 0, 1);
     $pdf->Cell(0, 20, "Yours faithfully", 0, 1);
 
-    // Save the PDF to a file with a unique name
-    $pdfFileName = 'letter_' . $applicationID . '.pdf';
-    $pdfFilePath = './letters/' . $pdfFileName;
-    $pdf->Output($pdfFilePath, "F");
+// Save the PDF to a file with a unique name
+$pdfFileName = 'letter_' . $applicationID . '.pdf';
+$pdfFilePath = './letters/' . $pdfFileName;
+$pdf->Output($pdfFilePath, "F");
+
+// Return the file path to be saved in the database
+return $pdfFilePath;
+
 
     // Return the file path to be saved in the database
     return $pdfFilePath;
