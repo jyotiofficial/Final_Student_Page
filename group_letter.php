@@ -40,7 +40,7 @@ if ($result->num_rows > 0) {
     $row = mysqli_fetch_assoc($result);
 
     // Extract values from the fetched data
-    $refrenceNumber = "CE/INTERN/" . sprintf("%04d", intval($row['ID']) + 1) . "/" . date('Y') . "-" . (date('y') + 1);
+    $refrenceNumber = "CE/INTERN/" . sprintf("%04d", intval($row['ID'])) . "/" . date('Y') . "-" . (date('y') + 1);
     $date = $applicationDate;
     $start_date = $row['startDate'];
     $end_date = $row['endDate'];
