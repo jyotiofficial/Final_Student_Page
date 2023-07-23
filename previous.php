@@ -31,10 +31,13 @@ if (!$result) {
 // Fetch all rows from the result as an associative array
 $previousApplications = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
+// Close the database connection
+mysqli_close($connection);
+
 // Function to generate and save the letter as a PDF
 function generateLetter($refrenceNumber, $date, $name, $applicationID, $start_date, $end_date, $year, $branch, $academicYear, $company, $companyaddress)
 {
-    // Create a new PDF document
+   // Create a new PDF document
     $pdf = new FPDF('P', 'mm', 'Letter');
     $pdf->SetLeftMargin(30);
     $pdf->SetRightMargin(30);
@@ -87,32 +90,6 @@ function generateLetter($refrenceNumber, $date, $name, $applicationID, $start_da
     return $pdfFilePath;
 }
 
-// ... (previous code remains the same) ...
-foreach ($previousApplications as $application) {
-    // ...
-
-    // Generate the letter content and save as PDF
-    $letterFilePath = generateLetter(
-        isset($application['RefrenceNumber']) ? $application['RefrenceNumber'] : '',
-        isset($application['Date']) ? $application['Date'] : '',
-        isset($application['Name']) ? $application['Name'] : '',
-        $application['ID'],
-        isset($application['startDate']) ? $application['startDate'] : '',
-        isset($application['endDate']) ? $application['endDate'] : '',
-        isset($application['Year']) ? $application['Year'] : '',
-        isset($application['Branch']) ? $application['Branch'] : '',
-        isset($application['AcademicYear']) ? $application['AcademicYear'] : '',
-        isset($application['CompanyName']) ? $application['CompanyName'] : '',
-        isset($application['CompanyAddress']) ? $application['CompanyAddress'] : ''
-    );
-
-    // Update the database with the generated letter path
-    $updateQuery = "UPDATE internship_applications SET Letter = '$letterFilePath' WHERE ID = " . $application['ID'];
-    mysqli_query($connection, $updateQuery);
-
-    // ...
-}
-
 // Check if $previousApplications is not empty before using it in the foreach loop
 if (!empty($previousApplications)) {
     foreach ($previousApplications as $application) {
@@ -136,19 +113,7 @@ if (!empty($previousApplications)) {
                 $tdContent = '<a href="' . $application['Letter'] . '" target="_blank">View Letter</a>';
             } else {
                 // Generate the letter content and save as PDF
-                $letterFilePath = generateLetter(
-                    isset($application['RefrenceNumber']) ? $application['RefrenceNumber'] : '',
-                    isset($application['Date']) ? $application['Date'] : '',
-                    isset($application['Name']) ? $application['Name'] : '',
-                    $application['ID'],
-                    isset($application['startDate']) ? $application['startDate'] : '',
-                    isset($application['endDate']) ? $application['endDate'] : '',
-                    isset($application['Year']) ? $application['Year'] : '',
-                    isset($application['Branch']) ? $application['Branch'] : '',
-                    isset($application['AcademicYear']) ? $application['AcademicYear'] : '',
-                    isset($application['CompanyName']) ? $application['CompanyName'] : '',
-                    isset($application['CompanyAddress']) ? $application['CompanyAddress'] : ''
-                );
+                $letterFilePath = generateLetter($refrenceNumber, $date, $name, $application['ID'], $start_date, $end_date, $year, $branch, $academicYear, $company, $companyaddress);
 
                 // Update the database with the generated letter path
                 $updateQuery = "UPDATE internship_applications SET Letter = '$letterFilePath' WHERE ID = " . $application['ID'];
@@ -158,11 +123,32 @@ if (!empty($previousApplications)) {
                 $tdContent = '<a href="' . $letterFilePath . '" target="_blank">View Letter</a>';
             }
         } else {
-            // "No Letter" for "Pending" status
+            // "No Letter" for "Pending" or "Rejected" status
             $tdContent = 'No Letter';
         }
 
         // ... (remaining columns remain the same) ...
+
+        // Add the condition for displaying "View" button based on StudentName field
+        if (!empty($application['StudentName'])) {
+            echo "<td class='pt-3 text-center'>";
+            echo "<a href='./letter.php?ID=" . $application["ID"] . "' target='_blank' class='btn btn-warning'>";
+            echo "<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-eye-fill' viewBox='0 0 16 16'>";
+            echo "<path d='M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z' />";
+            echo "<path d='M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z' />";
+            echo "</svg>";
+            echo "</a>";
+            echo "</td>";
+        } else {
+            echo "<td class='pt-3 text-center'>";
+            echo "<a href='./group_letter.php?ID=" . $application["ID"] . "' target='_blank' class='btn btn-warning'>";
+            echo "<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-eye-fill' viewBox='0 0 16 16'>";
+            echo "<path d='M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z' />";
+            echo "<path d='M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z' />";
+            echo "</svg>";
+            echo "</a>";
+            echo "</td>";
+        }
     }
 }
 ?>
@@ -236,26 +222,7 @@ if (!empty($previousApplications)) {
                                 ?>
                             </td>
                             <td>
-                                <?php if ($status === 'rejected'): ?>
-                                    <!-- Displaying an empty cell for "Rejected" status -->
-                                    <?php echo '---'; ?>
-                                <?php elseif ($status === 'approved' && !empty($application['Letter'])): ?>
-                                    <!-- "View" button for "Approved" status with no download access -->
-                                    <a href="<?php echo $application['Letter']; ?>" target="_blank">View Letter</a>
-                                <?php else: ?>
-                                    <!-- "No Letter" for "Approved" status with no download access -->
-                                    No Letter
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <?php if ($status === 'approved' && empty($application['Letter'])): ?>
-                                    <!-- Upload form for "Approved" status with no existing letter -->
-                                    <form action="upload_letter.php" method="POST" enctype="multipart/form-data">
-                                        <input type="hidden" name="application_id" value="<?php echo $application['ID']; ?>">
-                                        <input type="file" name="letter" accept=".pdf" required>
-                                        <button type="submit">Upload</button>
-                                    </form>
-                                <?php endif; ?>
+                                <?php echo $tdContent; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>

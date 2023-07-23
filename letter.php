@@ -16,22 +16,22 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error . " (Error code: " . $conn->connect_errno . ")");
 }
 
-// Fetch the value of 'student_name' and 'application_date' from table 'individual_student'
-$tableName = 'individual_student';
-$columnName = 'StudentName, created_at';
+// Fetch the value of 'student_name' and 'application_date' from table 'applications'
+$tableName = 'applications';
+$columnName = 'student_name, application_date';
 $query = "SELECT $columnName FROM $tableName";
 $result = mysqli_query($conn, $query);
 
 if ($result) {
     $row = mysqli_fetch_assoc($result);
-    $studentName = $row['StudentName']; // Fetch the 'student_name'
-    $created_at = $row['created_at']; // Fetch the 'application_date'
+    $studentName = $row['student_name']; // Fetch the 'student_name'
+    $applicationDate = $row['application_date']; // Fetch the 'application_date'
 } else {
     echo "Failed to fetch student name and application date.";
 }
 
-// Fetch the value of 'ID', 'startDate', 'endDate', 'year', 'branch', 'AcademicYear', 'CompanyName', and 'CompanyAddress' from table 'individual_student'
-$tableName = 'individual_student';
+// Fetch the value of 'ID', 'startDate', 'endDate', 'year', 'branch', 'AcademicYear', 'CompanyName', and 'CompanyAddress' from table 'internship_applications'
+$tableName = 'internship_applications';
 $columnName = 'ID, startDate, endDate, year, branch, AcademicYear, CompanyName, CompanyAddress';
 $query = "SELECT $columnName FROM $tableName ORDER BY ID DESC LIMIT 1";
 $result = mysqli_query($conn, $query);
@@ -41,7 +41,7 @@ if ($result->num_rows > 0) {
 
     // Extract values from the fetched data
     $refrenceNumber = "CE/INTERN/" . sprintf("%04d", intval($row['ID'])) . "/" . date('Y') . "-" . (date('y') + 1);
-    $date = $created_at;
+    $date = $applicationDate;
     $name = $studentName; // Using the fetched student name
     $applicationID = $row['ID'];
     $start_date = $row['startDate'];

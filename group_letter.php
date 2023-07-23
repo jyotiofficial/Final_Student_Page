@@ -1,15 +1,6 @@
 <?php
 require '../../Libraries/fpdf/fpdf.php';
 
-// Function to create a database connection
-function createDatabaseConnection($servername, $username, $password, $dbname) {
-    $conn = new mysqli($servername, $username, $password, $dbname);
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error . " (Error code: " . $conn->connect_errno . ")");
-    }
-    return $conn;
-}
-
 // Replace these with your database credentials
 $servername = "localhost";
 $username = "root";
@@ -17,7 +8,13 @@ $password = "";
 $dbname = "internship_portal";
 
 // Create a database connection
-$conn = createDatabaseConnection($servername, $username, $password, $dbname);
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Check if the connection is successful
+if ($conn->connect_error) {
+    // Display detailed error message
+    die("Connection failed: " . $conn->connect_error . " (Error code: " . $conn->connect_errno . ")");
+}
 
 // Fetch the value of 'student_name' and 'application_date' from table 'applications'
 $tableName = 'applications';
@@ -25,13 +22,12 @@ $columnName = 'student_name, application_date';
 $query = "SELECT $columnName FROM $tableName";
 $result = mysqli_query($conn, $query);
 
-// Check if the query was successful
 if ($result) {
     $row = mysqli_fetch_assoc($result);
     $studentName = $row['student_name']; // Fetch the 'student_name'
     $applicationDate = $row['application_date']; // Fetch the 'application_date'
 } else {
-    die("Failed to fetch student name and application date.");
+    echo "Failed to fetch student name and application date.";
 }
 
 // Fetch the value of 'ID', 'startDate', 'endDate', 'branch', 'semester', 'CompanyName', and 'CompanyAddress' from table 'internship_applications'
@@ -40,8 +36,7 @@ $columnName = 'ID, startDate, endDate, branch, semester, CompanyName, CompanyAdd
 $query = "SELECT $columnName FROM $tableName ORDER BY ID DESC LIMIT 1";
 $result = mysqli_query($conn, $query);
 
-// Check if the query was successful and data exists
-if ($result && $result->num_rows > 0) {
+if ($result->num_rows > 0) {
     $row = mysqli_fetch_assoc($result);
 
     // Extract values from the fetched data
@@ -69,8 +64,7 @@ if ($result && $result->num_rows > 0) {
     $query = "SELECT $columnName FROM $tableName";
     $result = mysqli_query($conn, $query);
 
-    // Check if the query was successful and data exists
-    if ($result && mysqli_num_rows($result) > 0) {
+    if ($result) {
         $internNames = array();
         $groupID = null;
         while ($row = mysqli_fetch_assoc($result)) {
@@ -80,7 +74,7 @@ if ($result && $result->num_rows > 0) {
             }
         }
     } else {
-        die("Failed to fetch intern names and group IDs.");
+        echo "Failed to fetch intern names and group IDs.";
     }
 
     // Close the database connection
@@ -142,9 +136,7 @@ $pdf->SetFont('Times', 'B');
 
     $pdf->Cell(0, 10, "Yours faithfully,", 0, 1, "L");
 
-// Output the PDF file as inline display
+    // Output the PDF file as inline display
     $pdf->Output("I", "Intern_Application_" . $groupID);
-} else {
-    die("No data found in the 'internship_applications' table.");
 }
 ?>

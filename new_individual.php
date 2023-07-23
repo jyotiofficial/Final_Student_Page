@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             require_once('connect.php'); // Assuming the database configuration is in this file
     
             // Use prepared statement to prevent SQL injection
-            $query = "INSERT INTO individual_student (StudentName, AcademicYear, CompanyName, CompanyAddress, CompanyLocation, startDate, endDate, branch, semester, Stipend, Location, Year) 
+            $query = "INSERT INTO internship_applications (StudentName, AcademicYear, CompanyName, CompanyAddress, CompanyLocation, startDate, endDate, branch, semester, Stipend, Location, Year) 
                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     
             $stmt = mysqli_prepare($db_connection, $query);
