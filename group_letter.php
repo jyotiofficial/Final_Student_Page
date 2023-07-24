@@ -26,22 +26,21 @@ if (isset($_GET['ID'])) {
 
 // Fetch the value of 'student_name' and 'application_date' from table 'applications'
 $tableName = 'applications';
-$columnName = 'student_name, application_date';
+$columnName = 'student_name';
 $query = "SELECT $columnName FROM $tableName";
 $result = mysqli_query($conn, $query);
 
 if ($result) {
     $row = mysqli_fetch_assoc($result);
     $studentName = $row['student_name']; // Fetch the 'student_name'
-    $applicationDate = $row['application_date']; // Fetch the 'application_date'
 } else {
-    echo "Failed to fetch student name and application date.";
+    echo "Failed to fetch student name.";
     exit();
 }
 
 // Fetch the value of 'ID', 'startDate', 'endDate', 'branch', 'semester', 'CompanyName', and 'CompanyAddress' from table 'internship_applications'
 $tableName = 'internship_applications';
-$columnName = 'ID, startDate, endDate, branch, semester, CompanyName, CompanyAddress';
+$columnName = 'ID, startDate, endDate, branch, semester, CompanyName, CompanyAddress, ActionDate';
 $query = "SELECT $columnName FROM $tableName WHERE ID = $groupID";
 $result = mysqli_query($conn, $query);
 
@@ -50,7 +49,7 @@ if ($result->num_rows > 0) {
 
     // Extract values from the fetched data
     $refrenceNumber = "CE/INTERN/" . sprintf("%04d", intval($row['ID'])) . "/" . date('Y') . "-" . (date('y') + 1);
-    $date = $applicationDate;
+    $date = $row['ActionDate'];
     $start_date = $row['startDate'];
     $end_date = $row['endDate'];
     $branch = $row['branch'];
