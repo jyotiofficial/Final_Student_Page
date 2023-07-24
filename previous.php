@@ -4,8 +4,11 @@ $style = "./styles/global.css";
 $favicon = "../../assets/favicon.ico";
 include_once("../../components/head.php");
 
-// Include the configuration file
-require_once("config.php");
+// Database connection settings
+$host = "localhost";
+$username = "root";
+$password = "";
+$database = "internship_portal";
 
 // Connect to your database
 $connection = mysqli_connect($host, $username, $password, $database);
@@ -35,6 +38,10 @@ $previousApplications = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
 // Close the database connection
 mysqli_close($connection);
+
+// Define the directory path where the letters are stored
+$lettersDirectory = "C:/xampp/htdocs/internship-portal-final/internship-portal/pages/student/letters/"; // Adjust the path to the actual directory where the letters are stored
+
 
 ?>
 
@@ -104,20 +111,21 @@ mysqli_close($connection);
                                 ?>
                             </td>
                             <td>
-                                <?php
-                                if ($status === 'approved') {
-                                    if (!empty($application['StudentName'])) {
-                                        echo '<a href="' . $lettersDirectory . 'letter_' . $application["ID"] . '.pdf" target="_blank">View Letter</a>';
-                                    } else {
-                                        echo '<a href="' . $lettersDirectory . 'group_letter_' . $application["ID"] . '.pdf" target="_blank">View Letter</a>';
-                                    }
-                                } elseif ($status === 'pending') {
-                                    echo 'No Letter';
-                                } else {
-                                    echo '---';
-                                }
-                                ?>
-                            </td>
+    <?php
+    if ($status === 'pending') {
+        echo 'No Letter';
+    } elseif ($status === 'rejected') {
+        echo '---';
+    } elseif ($status === 'approved') {
+        if (!empty($application['StudentName'])) {
+            echo '<a href="letter.php?ID=' . $application['ID'] . '" target="_blank">View Letter</a>';
+        } else {
+            echo '<a href="group_letter.php?ID=' . $application['ID'] . '" target="_blank">View Letter</a>';
+        }
+    }
+    ?>
+</td>
+
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
