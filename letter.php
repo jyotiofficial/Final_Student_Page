@@ -29,22 +29,21 @@ $lettersDirectory = "C:/xampp/htdocs/internship-portal-final/internship-portal/p
 
 // Fetch the value of 'student_name' and 'application_date' from table 'applications' for the specific application ID
 $tableName = 'applications';
-$columnName = 'student_name, application_date';
+$columnName = 'student_name';
 $query = "SELECT $columnName FROM $tableName WHERE ID = $applicationID";
 $result = mysqli_query($conn, $query);
 
 if ($result) {
     $row = mysqli_fetch_assoc($result);
     $studentName = $row['student_name']; // Fetch the 'student_name'
-    $applicationDate = $row['application_date']; // Fetch the 'application_date'
 } else {
-    echo "Failed to fetch student name and application date.";
+    echo "Failed to fetch student name.";
     exit();
 }
 
 // Fetch the value of 'startDate', 'endDate', 'year', 'branch', 'AcademicYear', 'CompanyName', and 'CompanyAddress' from table 'internship_applications' for the specific application ID
 $tableName = 'internship_applications';
-$columnName = 'startDate, endDate, year, branch, AcademicYear, CompanyName, CompanyAddress';
+$columnName = 'startDate, endDate, year, branch, AcademicYear, CompanyName, CompanyAddress, ActionDate';
 $query = "SELECT $columnName FROM $tableName WHERE ID = $applicationID";
 $result = mysqli_query($conn, $query);
 
@@ -53,7 +52,7 @@ if ($result->num_rows > 0) {
 
     // Extract values from the fetched data
     $refrenceNumber = "CE/INTERN/" . sprintf("%04d", intval($applicationID)) . "/" . date('Y') . "-" . (date('y') + 1);
-    $date = $applicationDate;
+    $date = $row['ActionDate'];
     $name = $studentName; // Using the fetched student name
     $start_date = $row['startDate'];
     $end_date = $row['endDate'];
