@@ -16,6 +16,14 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error . " (Error code: " . $conn->connect_errno . ")");
 }
 
+// Fetch the group ID from the URL parameter
+if (isset($_GET['ID'])) {
+    $groupID = $_GET['ID'];
+} else {
+    echo "No group ID provided.";
+    exit();
+}
+
 // Fetch the value of 'student_name' and 'application_date' from table 'applications'
 $tableName = 'applications';
 $columnName = 'student_name, application_date';
@@ -28,12 +36,13 @@ if ($result) {
     $applicationDate = $row['application_date']; // Fetch the 'application_date'
 } else {
     echo "Failed to fetch student name and application date.";
+    exit();
 }
 
 // Fetch the value of 'ID', 'startDate', 'endDate', 'branch', 'semester', 'CompanyName', and 'CompanyAddress' from table 'internship_applications'
 $tableName = 'internship_applications';
 $columnName = 'ID, startDate, endDate, branch, semester, CompanyName, CompanyAddress';
-$query = "SELECT $columnName FROM $tableName ORDER BY ID DESC LIMIT 1";
+$query = "SELECT $columnName FROM $tableName WHERE ID = $groupID";
 $result = mysqli_query($conn, $query);
 
 if ($result->num_rows > 0) {
@@ -61,24 +70,18 @@ if ($result->num_rows > 0) {
     // Fetch intern names and group IDs from 'group_students' table
     $tableName = 'group_students';
     $columnName = 'studentName, groupId';
-    $query = "SELECT $columnName FROM $tableName";
+    $query = "SELECT $columnName FROM $tableName WHERE groupId = $groupID";
     $result = mysqli_query($conn, $query);
 
     if ($result) {
         $internNames = array();
-        $groupID = null;
         while ($row = mysqli_fetch_assoc($result)) {
             $internNames[] = $row['studentName'];
-            if ($groupID === null) {
-                $groupID = $row['groupId'];
-            }
         }
     } else {
         echo "Failed to fetch intern names and group IDs.";
+        exit();
     }
-
-    // Close the database connection
-    $conn->close();
 
     // Create the PDF
     $pdf = new FPDF('P', 'mm', 'Letter');
@@ -102,10 +105,10 @@ if ($result->num_rows > 0) {
     $pdf->Cell(70, 15, "Dear Sir,", 0, 1, "L");
 
     // Using the fetched intern names and the groupID
-    $pdf->Write(8, "With reference to the above subject, the following students of semester ".$semester.", ".$branch. " would like to undertake internship training in your esteemed organization:");
-$pdf->Cell(0, 10, "", 0, 1);
-$pdf->SetLeftMargin(35);
-$pdf->SetFont('Times', 'B');
+    $pdf->Write(8, "With reference to the above subject, the following students of semester " . $semester . ", " . $branch . " would like to undertake internship training in your esteemed organization:");
+    $pdf->Cell(0, 10, "", 0, 1);
+    $pdf->SetLeftMargin(35);
+    $pdf->SetFont('Times', 'B');
     $pdf->SetLeftMargin(45);
     for ($i = 0; $i < count($internNames); $i++) {
         $pdf->Write(8, chr(97 + $i) . ") " . $internNames[$i]);
@@ -136,7 +139,28 @@ $pdf->SetFont('Times', 'B');
 
     $pdf->Cell(0, 10, "Yours faithfully,", 0, 1, "L");
 
-    // Output the PDF file as inline display
-    $pdf->Output("I", "Intern_Application_" . $groupID);
+    // Save the PDF in the 'letters' directory
+    $lettersDirectory = "./letters/"; // Adjust the path to the actual directory where the letters should be stored
+    $pdfFileName = "group_letter_" . $groupID . ".pdf";
+    $pdfFilePath = $lettersDirectory . $pdfFileName;
+
+    // Save the PDF file to the 'letters' directory
+    $pdf->Output("F", $pdfFilePath);
+
+    // Now, update the database with the file name in the 'Letter' attribute of the 'internship_applications' table
+    $escapedFileName = mysqli_real_escape_string($conn, $pdfFileName);
+    $updateQuery = "UPDATE internship_applications SET Letter = '$escapedFileName' WHERE ID = '$groupID'";
+    $updateResult = mysqli_query($conn, $updateQuery);
+
+    if (!$updateResult) {
+        die("Update query failed: " . mysqli_error($conn));
+    }
+
+    // Output the PDF inline
+    header("Content-type: application/pdf");
+    header("Content-Disposition: inline; filename=group_letter_" . $groupID . ".pdf");
+    $pdf->Output();
+} else {
+    echo "Group ID not found in the database.";
+    exit();
 }
-?>
