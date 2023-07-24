@@ -16,10 +16,18 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error . " (Error code: " . $conn->connect_errno . ")");
 }
 
-// Fetch the value of 'student_name' and 'application_date' from table 'applications'
+// Fetch the application ID from the URL parameter
+if (isset($_GET['ID'])) {
+    $applicationID = $_GET['ID'];
+} else {
+    echo "No application ID provided.";
+    exit();
+}
+
+// Fetch the value of 'student_name' and 'application_date' from table 'applications' for the specific application ID
 $tableName = 'applications';
 $columnName = 'student_name, application_date';
-$query = "SELECT $columnName FROM $tableName";
+$query = "SELECT $columnName FROM $tableName WHERE ID = $applicationID";
 $result = mysqli_query($conn, $query);
 
 if ($result) {
@@ -28,22 +36,22 @@ if ($result) {
     $applicationDate = $row['application_date']; // Fetch the 'application_date'
 } else {
     echo "Failed to fetch student name and application date.";
+    exit();
 }
 
-// Fetch the value of 'ID', 'startDate', 'endDate', 'year', 'branch', 'AcademicYear', 'CompanyName', and 'CompanyAddress' from table 'internship_applications'
+// Fetch the value of 'startDate', 'endDate', 'year', 'branch', 'AcademicYear', 'CompanyName', and 'CompanyAddress' from table 'internship_applications' for the specific application ID
 $tableName = 'internship_applications';
-$columnName = 'ID, startDate, endDate, year, branch, AcademicYear, CompanyName, CompanyAddress';
-$query = "SELECT $columnName FROM $tableName ORDER BY ID DESC LIMIT 1";
+$columnName = 'startDate, endDate, year, branch, AcademicYear, CompanyName, CompanyAddress';
+$query = "SELECT $columnName FROM $tableName WHERE ID = $applicationID";
 $result = mysqli_query($conn, $query);
 
 if ($result->num_rows > 0) {
     $row = mysqli_fetch_assoc($result);
 
     // Extract values from the fetched data
-    $refrenceNumber = "CE/INTERN/" . sprintf("%04d", intval($row['ID'])) . "/" . date('Y') . "-" . (date('y') + 1);
+    $refrenceNumber = "CE/INTERN/" . sprintf("%04d", intval($applicationID)) . "/" . date('Y') . "-" . (date('y') + 1);
     $date = $applicationDate;
     $name = $studentName; // Using the fetched student name
-    $applicationID = $row['ID'];
     $start_date = $row['startDate'];
     $end_date = $row['endDate'];
     $year = $row['year'];
@@ -98,11 +106,11 @@ if ($result->num_rows > 0) {
 
     $pdf->Cell(0, 10, "Thank you.", 0, 1);
     $pdf->Cell(0, 20, "Yours faithfully", 0, 1);
-    
-    // Output the PDF inline
-    $pdf->Output("I", "Intern_Application_" . $applicationID);
-} else {
-    echo "No data found in the database.";
-}
 
+    // Output the PDF inline
+    $pdf->Output("I", "Intern_Application_" . $applicationID . ".pdf");
+} else {
+    echo "No data found in the database for the specified application ID.";
+    exit();
+}
 ?>
