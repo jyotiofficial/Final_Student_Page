@@ -18,13 +18,13 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Fetch student_name from the 'applications' table
+// Fetch student_name from the 'student' table
 $student_name = "";
-$sql = "SELECT student_name FROM applications WHERE id = 1"; // Assuming you want to fetch the name for the application with ID 1
+$sql = "SELECT s_name FROM student WHERE s_id = 15"; // Assuming you want to fetch the name for the application with ID 15
 $result = $conn->query($sql);
 if ($result->num_rows > 0) {
     $row = $result->fetch_assoc();
-    $student_name = $row["student_name"];
+    $student_name = $row["s_name"];
 }
 
 $conn->close();
