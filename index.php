@@ -4,6 +4,13 @@ $style = "./styles/global.css";
 $favicon = "../../assets/favicon.ico";
 include_once("../../components/head.php");
 
+session_start();
+// Check if the user is not authenticated, then redirect to the login page
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+    header("Location: ./Login-System-master/login.php"); // Replace 'path/to/login.php' with the actual path to your login page
+    exit();
+}
+
 // Database connection setup - Replace with your database credentials
 $servername = "localhost";
 $username = "root";
@@ -20,15 +27,24 @@ if ($conn->connect_error) {
 
 // Fetch student_name from the 'student' table
 $student_name = "";
-$sql = "SELECT s_name FROM student WHERE s_id = 15"; // Assuming you want to fetch the name for the application with ID 15
-$result = $conn->query($sql);
-if ($result->num_rows > 0) {
-    $row = $result->fetch_assoc();
-    $student_name = $row["s_name"];
+$student_id = $_SESSION["id"]; // Get the student ID from the session
+$sql = "SELECT s_name FROM student WHERE s_id = ?"; // Use '?' as a placeholder for the student ID
+if ($stmt = $conn->prepare($sql)) {
+    // Bind the student ID as a parameter to the prepared statement
+    $stmt->bind_param("i", $student_id);
+    // Execute the prepared statement
+    $stmt->execute();
+    // Get the result
+    $result = $stmt->get_result();
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        $student_name = $row["s_name"];
+    }
+    // Close the statement
+    $stmt->close();
 }
-
-$conn->close();
 ?>
+
 
 <body>
     <?php include_once("../../components/navbar/index.php"); ?>

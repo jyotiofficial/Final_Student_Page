@@ -9,7 +9,8 @@ if (isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] == TRUE) {
 }
 
 # Include connection
-require_once "./config.php";
+// require_once "./config.php";
+require_once "./login_config.php";
 
 # Define variables and initialize with empty values
 $user_login_err = $user_password_err = $login_err = "";
@@ -58,10 +59,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
               # Store data in session variables
               $_SESSION["id"] = $id;
               $_SESSION["username"] = $username;
-              $_SESSION["loggedin"] = TRUE;
+              $_SESSION["loggedin"] = true;
 
               # Redirect user to index page
-              echo "<script>" . "window.location.href='./'" . "</script>";
+              echo "<script>" . "window.location.href='../index.php'" . "</script>";
               exit;
             } else {
               # If password is incorrect show an error message
@@ -103,8 +104,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </head>
 
 <body>
+  <?php include_once("../../../components/navbar/index.php"); ?>
+
   <div class="container">
-    <div class="row min-vh-100 justify-content-center align-items-center">
+    <div class="row min-vh-100 justify-content-center mt-4">
       <div class="col-lg-5">
         <?php
         if (!empty($login_err)) {
