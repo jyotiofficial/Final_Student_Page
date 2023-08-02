@@ -1,11 +1,18 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 $title = "Dashboard";
 $style = "./styles/global.css";
 $favicon = "../../assets/favicon.ico";
 include_once("../../components/head.php");
 
+// No need to start session here since it's already started in "connect.php"
 
 include "../../connect/connect.php";
+
+$user_email = $_SESSION["email"] ?? null; // Use the null coalescing operator to handle the case when $_SESSION["email"] is not set
+// Rest of the code remains unchanged...
 
 // Retrieve the ID from the URL
 $id = isset($_GET['id']) ? $_GET['id'] : 1;
@@ -45,7 +52,7 @@ if (isset($_POST['submit'])) {
         $originalFilename = $resume['name'];
 
         // Generate a filename based on the given format
-        $filename = $userName . "_" . $announcementTitle . "_" . $admissionNo . ".pdf";
+        $filename = $userName . "" . $announcementTitle . "" . $admissionNo . ".pdf";
 
         //Read contents of the uploadled file 
         $fileContents = file_get_contents($resume['tmp_name']);
@@ -57,12 +64,23 @@ if (isset($_POST['submit'])) {
         // Move the uploaded file to the target directory
         if (move_uploaded_file($resume['tmp_name'], $uploadFolder . $filename)) {
            
-            $sql = "INSERT INTO applications (student_name, admission_no, contact_no, student_location, cv_file, application_date, company_name, announcement_id, resume) VALUES (?, ?, ?, ?, ?, NOW(), ?, ?, ?)";
+            $sql = "INSERT INTO applications (student_name, admission_no, contact_no, student_location, cv_file, application_date, company_name, announcement_id, resume, email) VALUES (?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?)";
             $stmt = $db_connection->prepare($sql);
-            $stmt->bind_param("ssssssis", $userName, $admissionNo, $contact, $studentLocation, $filename, $announcementTitle, $id, $pdfUrl);
-            $stmt->execute();
-            $stmt->close();
 
+            // $stmt->bind_param("ssssssiss", $userName, $admissionNo, $contact, $studentLocation, $filename, $announcementTitle, $id, $pdfUrl, $user_email);
+            // $stmt->execute();
+            // $stmt->close();
+            if (!$stmt) {
+                die("Error: " . $db_connection->error); // Display error if prepare() fails
+            }
+
+            $stmt->bind_param("ssssssiss", $userName, $admissionNo, $contact, $studentLocation, $filename, $announcementTitle, $id, $pdfUrl, $user_email);
+            
+            if (!$stmt->execute()) {
+                die("Error: " . $stmt->error); // Display error if execute() fails
+            }
+            
+            $stmt->close();
                 // Display success message
             $successMessage = "Successfully applied for $announcementTitle.<br>You have successfully registered for $announcementTitle. Please keep checking your email inbox for further updates.";
         } else {
